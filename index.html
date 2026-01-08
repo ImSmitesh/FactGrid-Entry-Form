@@ -169,7 +169,7 @@ form {
 
     <div class="form-row">
         <label>P662 – Dedicatee:</label>
-        <input name="P662" autocomplete="off">
+        <input name="P662" autocomplete="off" placeholder="Should be a String">
         <button type="button" onclick="addField('P662_subfields', 'Qualifier')">Add Qualifier</button>
         <button type="button" onclick="addField('P662_subfields', 'Reference')">Add Reference</button>
     </div>
@@ -352,7 +352,7 @@ document.getElementById("monasteriesForm").onsubmit = e => {
   });
 
   sessionStorage.setItem("monasteriesData", JSON.stringify(data));
-  window.location.href = "complexes.html";
+  window.location.href = "complexes_autocomplete.html";
 };
 
 
@@ -360,4 +360,3 @@ document.getElementById("monasteriesForm").onsubmit = e => {
 
 </body>
 </html>
-
