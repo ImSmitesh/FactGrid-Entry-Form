@@ -326,13 +326,19 @@ document.getElementById("monasteriesForm").onsubmit = e => {
         return pid + " " + val;
     });
 
+    const formatDate = d =>
+      d ? `+${d}T00:00:00Z/11` : "";
+
     const beginDates = fd.getAll(subContainer + "_begin[]");
     const endDates = fd.getAll(subContainer + "_end[]");
     const qualifiers = [];
     beginDates.forEach((b, i) => {
-        const eDate = endDates[i] || "";
-        qualifiers.push(`P49 ${b} P50 ${eDate}`);
+    const eDate = endDates[i] || "";
+    const bFmt = formatDate(b);
+    const eFmt = formatDate(eDate);
+    qualifiers.push(`P49 ${bFmt} P50 ${eFmt}`.trim());
     });
+
 
     // Merge all subfields in a single string
     const allSubs = [...qualifiers, ...subRows].join("  ").trim();
@@ -352,12 +358,12 @@ document.getElementById("monasteriesForm").onsubmit = e => {
   });
 
   sessionStorage.setItem("monasteriesData", JSON.stringify(data));
-  window.location.href = "complexes.html";
+  window.location.href = "complexes_autocomplete.html";
 };
-
 
 </script>
 
 </body>
 </html>
+
 
