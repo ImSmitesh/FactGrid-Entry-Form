@@ -122,37 +122,29 @@ form {
 
 <form id="monasteriesForm">
 
-    <!-- Label -->
     <div class="form-row">
         <label>Label:</label>
-        <input name="L_lang[]", placeholder="Language code (e.g. en, de)">
-        <input name="L_value[]", placeholder="Label value">
+        <input name="L_lang[]" placeholder="Language code (e.g. en, de)">
+        <input name="L_value[]" placeholder="Label value">
         <button type="button" onclick="addLangField('labels-container', 'Len')">Add</button>
     </div>
     <div id="labels-container"></div>
 
-    <!-- Description -->
     <div class="form-row">
         <label>Description:</label>
-        <input name="D_lang[]", placeholder="Language code (e.g. en, de)">
-        <input name="D_value[]", placeholder="Label value">
+        <input name="D_lang[]" placeholder="Language code (e.g. en, de)">
+        <input name="D_value[]" placeholder="Label value">
         <button type="button" onclick="addLangField('descriptions-container', 'Den')">Add</button>
     </div>
     <div id="descriptions-container"></div>
 
-    <!-- Aliases -->
     <div class="form-row">
         <label>Also known as / Aliases:</label>
-        <input name="A_lang[]", placeholder="Language code (e.g. en, de)">
-        <input name="A_value[]", placeholder="Label value">
+        <input name="A_lang[]" placeholder="Language code (e.g. en, de)">
+        <input name="A_value[]" placeholder="Label value">
         <button type="button" onclick="addLangField('aliases-container', 'Aen')">Add</button>
     </div>
     <div id="aliases-container"></div>
-
-    <div class="form-row">
-        <label>P131 - Research projects that contributed to this data set:</label>
-        <input name="P131" autocomplete="off">
-    </div>
 
     <div class="form-row">
         <label>P2 – Instance of:</label>
@@ -160,12 +152,17 @@ form {
     </div>
 
     <div class="form-row">
-        <label>P746 – Religious order:</label>
-        <input name="P746" autocomplete="off">
-        <button type="button" onclick="addField('P746_subfields', 'Qualifier')">Add Qualifier</button>
-        <button type="button" onclick="addField('P746_subfields', 'Reference')">Add Reference</button>
+        <label>P131 - Research projects that contributed to this data set:</label>
+        <input name="P131" autocomplete="off">
     </div>
-    <div class="subfields" id="P746_subfields"></div>
+
+    <div class="form-row">
+        <label>P208 – Address / Real estate:</label>
+        <input name="P208" autocomplete="off">
+        <button type="button" onclick="addField('P208_subfields', 'Qualifier')">Add Qualifier</button>
+        <button type="button" onclick="addField('P208_subfields', 'Reference')">Add Reference</button>
+    </div>
+    <div class="subfields" id="P208_subfields"></div>
 
     <div class="form-row">
         <label>P662 – Dedicatee:</label>
@@ -176,14 +173,44 @@ form {
     <div class="subfields" id="P662_subfields"></div>
 
     <div class="form-row">
-        <label>P208 – Address / Real estate:</label>
-        <input name="P208" autocomplete="off">
-        <button type="button" onclick="addField('P208_subfields', 'Qualifier')">Add Qualifier</button>
-        <button type="button" onclick="addField('P208_subfields', 'Reference')">Add Reference</button>
+        <label>P746 – Religious order:</label>
+        <input name="P746" autocomplete="off">
+        <button type="button" onclick="addField('P746_subfields', 'Qualifier')">Add Qualifier</button>
+        <button type="button" onclick="addField('P746_subfields', 'Reference')">Add Reference</button>
     </div>
-    <div class="subfields" id="P208_subfields"></div>
+    <div class="subfields" id="P746_subfields"></div>
 
-    <button class="submit-btn" type="submit">Next</button>
+    <br></br>
+    <h3 style="text-align: center;">Add Identifiers</h3>
+
+    <div class="form-row">
+        <label>P76 - GND:</label>
+        <input name="P76" autocomplete="off">
+        <button type="button" onclick="addField('P76_subfields', 'Reference')">Add Reference</button>
+    </div>
+    <div class="subfields" id="P76_subfields"></div>
+
+    <div class="form-row">
+        <label>P471 - Klosterdatenbank ID:</label>
+        <input name="P471" autocomplete="off">
+        <button type="button" onclick="addField('P471_subfields', 'Reference')">Add Reference</button>
+    </div>
+    <div class="subfields" id="P471_subfields"></div>
+
+    <button class="submit-btn" type="submit">Submit</button>
+    
+    <button class="submit-btn"
+    type="button"
+    onclick="window.location.href='complexes.html'"
+    style="
+        width: 180px;
+        white-space: nowrap;
+        float: right;
+    ">
+    Complexes Form
+    </button>
+
+
 </form>
 
 <script>
@@ -198,173 +225,131 @@ async function factgridSearch(query) {
 
 function attachFactGridAutocomplete(input) {
     const dropdown = document.createElement("div");
-    dropdown.className = "autocomplete-dropdown";
     dropdown.style.position = "absolute";
     dropdown.style.background = "#2a2a2a";
     dropdown.style.color = "#fff";
     dropdown.style.border = "1px solid #444";
     dropdown.style.zIndex = "1000";
-    dropdown.style.overflowX = "auto";
-    dropdown.style.whiteSpace = "nowrap";
     dropdown.style.display = "none";
-    dropdown.style.maxWidth = "500px"; // optional max width
-
-    document.body.appendChild(dropdown); // keep it in body for absolute positioning
-
-    let lastQuery = "";
+    document.body.appendChild(dropdown);
 
     input.addEventListener("input", async () => {
         const q = input.value.trim();
-        if (q.length < 1 || q === lastQuery) {
+        if (!q) {
             dropdown.style.display = "none";
             return;
         }
-        lastQuery = q;
-
         const results = await factgridSearch(q);
         dropdown.innerHTML = "";
-        if (results.length === 0) {
-            dropdown.style.display = "none";
-            return;
-        }
-
         results.forEach(r => {
             const opt = document.createElement("div");
             opt.textContent = `${r.label} (${r.id})`;
             opt.style.padding = "5px 10px";
-            opt.style.cursor = "pointer";
-            dropdown.appendChild(opt);
-
-            opt.addEventListener("click", () => {
+            opt.onclick = () => {
                 input.value = r.id;
                 dropdown.style.display = "none";
-            });
+            };
+            dropdown.appendChild(opt);
         });
-
-        // Position dropdown below input
         const rect = input.getBoundingClientRect();
         dropdown.style.top = rect.bottom + window.scrollY + "px";
         dropdown.style.left = rect.left + window.scrollX + "px";
         dropdown.style.minWidth = rect.width + "px";
-
         dropdown.style.display = "block";
     });
 
-    // Hide dropdown if click outside
     document.addEventListener("click", e => {
-        if (!dropdown.contains(e.target) && e.target !== input) {
-            dropdown.style.display = "none";
-        }
+        if (e.target !== input) dropdown.style.display = "none";
     });
-
-    // Reposition on window resize/scroll
-    window.addEventListener("scroll", () => dropdown.style.display = "none");
-    window.addEventListener("resize", () => dropdown.style.display = "none");
 }
-
-
 
 document.querySelectorAll(
   'input[name="P131"], input[name="P2"], input[name="P746"], input[name="P208"]'
 ).forEach(attachFactGridAutocomplete);
-
-
 
 function addField(containerId, type) {
     const container = document.getElementById(containerId);
     const div = document.createElement('div');
     div.className = 'dynamic-row';
     if (type === 'Qualifier') {
-        div.innerHTML = `Begin Date: <input type="date" name="${containerId}_begin[]"> End Date: <input type="date" name="${containerId}_end[]"> <button type="button" class="delete-btn" onclick="this.parentNode.remove()">Delete</button>`;
+        div.innerHTML = `Begin Date: <input type="date" name="${containerId}_begin[]">
+                         End Date: <input type="date" name="${containerId}_end[]">
+                         <button type="button" class="delete-btn" onclick="this.parentNode.remove()">Delete</button>`;
     } else {
-    div.innerHTML = `
-      <select name="${containerId}_pid[]">
-        <option value="P471">P471 – Klosterdatenbank ID</option>
-        <option value="P146">P146 – Online Information</option>
-      </select>
-      <input type="text" name="${containerId}_ref[]">
-      <button type="button" class="delete-btn" onclick="this.parentNode.remove()">Remove</button>
-    `;
-  }
+        div.innerHTML = `<select name="${containerId}_pid[]">
+                            <option value="P471">P471 – Klosterdatenbank ID</option>
+                            <option value="P146">P146 – Online Information</option>
+                         </select>
+                         <input type="text" name="${containerId}_ref[]">
+                         <button type="button" class="delete-btn" onclick="this.parentNode.remove()">Remove</button>`;
+    }
     container.appendChild(div);
 }
 
 function addLangField(containerId, type) {
     const container = document.getElementById(containerId);
-
     const div = document.createElement('div');
     div.className = 'dynamic-row';
-    div.innerHTML = `
-        <input type="text" name="${type}_lang[]" placeholder="Language code (e.g., en)"
-      style="width:260px;background:#2a2a2a;color:#fff;border:1px solid #444;border-radius:4px;padding:5px 10px;">
-    <input type="text" name="${type}_value[]" placeholder="Value"
-      style="width:260px;background:#2a2a2a;color:#fff;border:1px solid #444;border-radius:4px;padding:5px 10px;">
-    <button type="button" class="delete-btn" onclick="this.parentNode.remove()">Delete</button>
-  `;
-  container.appendChild(div);
+    div.innerHTML = `<input name="${type}_lang[]" placeholder="Language code">
+                     <input name="${type}_value[]" placeholder="Value">
+                     <button type="button" class="delete-btn" onclick="this.parentNode.remove()">Delete</button>`;
+    container.appendChild(div);
 }
 
 document.getElementById("monasteriesForm").onsubmit = e => {
-  e.preventDefault();
-  const fd = new FormData(e.target);
-  const data = {};
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const data = {};
 
-  // Normal single-value fields
-  ["P131", "P2", "P746", "P662", "P208"].forEach(field => {
-    let value = fd.get(field);
-    if (!value) return;
+    ["P131", "P2", "P746", "P662", "P208", "P471","P76"].forEach(field => {
+        let value = fd.get(field);
+        if (!value) return;
+        if (field === "P662") value = `"${value}"`;
 
-    // For P662, wrap value in quotes
-    if (field === "P662") {
-        value = `"${value}"`;
-    }
+        const sub = field + "_subfields";
+        const refs = fd.getAll(sub + "_pid[]").map((p, i) =>
+            p + " " + (fd.getAll(sub + "_ref[]")[i] || "")
+        );
 
-    // Collect subfields (qualifiers/references)
-    const subContainer = field + "_subfields";
-    const subRows = fd.getAll(subContainer + "_pid[]").map((pid, i) => {
-        const val = fd.getAll(subContainer + "_ref[]")[i] || "";
-        return pid + " " + val;
+        const fmt = d => d ? `+${d}T00:00:00Z/11` : "";
+        const begins = fd.getAll(sub + "_begin[]");
+        const ends = fd.getAll(sub + "_end[]");
+        const quals = begins.map((b, i) =>
+            `P49 ${fmt(b)} P50 ${fmt(ends[i])}`.trim()
+        );
+
+        const all = [...quals, ...refs].join("  ").trim();
+        data[field] = all ? `${value} ${all}` : value;
     });
 
-    const formatDate = d =>
-      d ? `+${d}T00:00:00Z/11` : "";
-
-    const beginDates = fd.getAll(subContainer + "_begin[]");
-    const endDates = fd.getAll(subContainer + "_end[]");
-    const qualifiers = [];
-    beginDates.forEach((b, i) => {
-    const eDate = endDates[i] || "";
-    const bFmt = formatDate(b);
-    const eFmt = formatDate(eDate);
-    qualifiers.push(`P49 ${bFmt} P50 ${eFmt}`.trim());
+    ["L","D","A"].forEach(p => {
+        const l = fd.getAll(`${p}_lang[]`);
+        const v = fd.getAll(`${p}_value[]`);
+        l.forEach((lang,i) => {
+            if (!lang || !v[i]) return;
+            const k = `${p}${lang.trim()}`;
+            if (!data[k]) data[k] = [];
+            data[k].push(`"${v[i]}"`);
+        });
     });
 
-
-    // Merge all subfields in a single string
-    const allSubs = [...qualifiers, ...subRows].join("  ").trim();
-    data[field] = allSubs ? `${value} ${allSubs}` : value;
-  });
-
-  // Labels, descriptions, aliases
-  ["L", "D", "A"].forEach(prefix => {
-    const langs = fd.getAll(`${prefix}_lang[]`);
-    const values = fd.getAll(`${prefix}_value[]`);
-    langs.forEach((lang, i) => {
-      if (!lang || !values[i]) return;
-      const key = `${prefix}${lang.trim()}`;
-      if (!data[key]) data[key] = [];
-      data[key].push(`"${values[i]}"`);
+    let v1 = "CREATE\n";
+    Object.entries(data).forEach(([k,v]) => {
+        if (Array.isArray(v)) {
+            v.forEach(x => v1 += `LAST\t${k}\t${x}\n`);
+        } else {
+            v1 += `LAST\t${k}\t${v}\n`;
+        }
     });
-  });
 
-  sessionStorage.setItem("monasteriesData", JSON.stringify(data));
-  window.location.href = "complexes.html";
+    const blob = new Blob([v1], { type: "text/plain" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "monastery_v1.txt";
+    a.click();
+    URL.revokeObjectURL(a.href);
 };
-
 </script>
 
 </body>
 </html>
-
-
-
