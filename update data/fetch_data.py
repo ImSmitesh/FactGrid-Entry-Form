@@ -5,10 +5,6 @@ import os
 
 ids = ['Q16200', 'Q11295', 'Q704192', 'Q141469', 'Q8', 'Q153166']
 
-import requests
-from urllib.parse import quote
-import json
-
 def fetch_items_by_pid(pid, save_path=None):
     endpoint = "https://database.factgrid.de/sparql"
     
@@ -37,14 +33,15 @@ def fetch_items_by_pid(pid, save_path=None):
     results = [(b["item"]["value"].rsplit("/", 1)[-1], b["itemLabel"]["value"])
                for b in data["results"]["bindings"]]
 
-    print(results[:5])
+    #print(results[:5])
     
     if save_path:
         with open(save_path, "w", encoding="utf-8") as f:
             json.dump(results, f, ensure_ascii=False, indent=2)
-            print(f'{idx}.json saved')
+            #print(f'{idx}.json saved')
     
     return results
+
 
 for idx in ids:
     save_file = f'../static/data/{idx}.json' 
