@@ -94,7 +94,7 @@ form {
 .submit-btn {
     margin-top: 20px;
     padding: 10px 20px;
-    width: 150px;
+    width: 180px;
     font-size: 16px;
     background: #28a745;
     color: white;
@@ -197,11 +197,11 @@ form {
     </div>
     <div class="subfields" id="P471_subfields"></div>
 
-    <button class="submit-btn" type="submit">Submit</button>
+    <button class="submit-btn" type="submit">Save V1 Command</button>
     
     <button class="submit-btn"
     type="button"
-    onclick="window.location.href='complexes.html'"
+    onclick="window.location.href='{{ url_for('complexes') }}'"
     style="
         width: 180px;
         white-space: nowrap;
@@ -213,17 +213,35 @@ form {
 
 </form>
 
-<script>
-const FG_API =
-  "https://database.factgrid.de/w/api.php?action=wbsearchentities&format=json&language=en&type=item&origin=*";
+<div style="text-align: center; margin-top: 20px;">
+  <h4 id="fetchMessage">To get updated data from FactGrid, please click the button below (it may take a few minutes).</h4>
+  <button type="button" class="submit-btn" id="runScriptBtn" style="width: 180px;">Run Fetch Script</button>
+</div>
 
-async function factgridSearch(query) {
-  const res = await fetch(FG_API + "&search=" + encodeURIComponent(query));
-  const json = await res.json();
-  return json.search || [];
+<script>
+// Map input names to their JSON files
+const autocompleteFiles = {
+  "P208": "static/data/Q16200.json",
+  "P131": "static/data/Q11295.json",
+  "P2": "static/data/Q704192.json",
+  "P746": "static/data/Q141469.json"
+};
+
+// Store loaded JSONs
+const autocompleteData = {};
+
+// Load all JSONs at start
+for (const [field, file] of Object.entries(autocompleteFiles)) {
+  fetch(file)
+    .then(res => res.json())
+    .then(data => {
+      autocompleteData[field] = data; 
+    })
+    .catch(err => console.error(`Error loading ${file}:`, err));
 }
 
-function attachFactGridAutocomplete(input) {
+// Attach autocomplete to input
+function attachLocalAutocomplete(input, fieldName) {
     const dropdown = document.createElement("div");
     dropdown.style.position = "absolute";
     dropdown.style.background = "#2a2a2a";
@@ -233,29 +251,39 @@ function attachFactGridAutocomplete(input) {
     dropdown.style.display = "none";
     document.body.appendChild(dropdown);
 
-    input.addEventListener("input", async () => {
-        const q = input.value.trim();
-        if (!q) {
+    input.addEventListener("input", () => {
+        const q = input.value.trim().toLowerCase();
+        if (!q || !autocompleteData[fieldName]) {
             dropdown.style.display = "none";
             return;
         }
-        const results = await factgridSearch(q);
+
+        const results = autocompleteData[fieldName]
+            .filter(([qid, name]) => name.toLowerCase().includes(q))
+            .slice(0, 5);
+
         dropdown.innerHTML = "";
-        results.forEach(r => {
+        results.forEach(([qid, name]) => {
             const opt = document.createElement("div");
-            opt.textContent = `${r.label} (${r.id})`;
+            opt.textContent = `${name} (${qid})`;
             opt.style.padding = "5px 10px";
+            opt.style.cursor = "pointer";
             opt.onclick = () => {
-                input.value = r.id;
+                input.value = qid; // only QID in input
                 dropdown.style.display = "none";
             };
             dropdown.appendChild(opt);
         });
-        const rect = input.getBoundingClientRect();
-        dropdown.style.top = rect.bottom + window.scrollY + "px";
-        dropdown.style.left = rect.left + window.scrollX + "px";
-        dropdown.style.minWidth = rect.width + "px";
-        dropdown.style.display = "block";
+
+        if (results.length) {
+            const rect = input.getBoundingClientRect();
+            dropdown.style.top = rect.bottom + window.scrollY + "px";
+            dropdown.style.left = rect.left + window.scrollX + "px";
+            dropdown.style.minWidth = rect.width + "px";
+            dropdown.style.display = "block";
+        } else {
+            dropdown.style.display = "none";
+        }
     });
 
     document.addEventListener("click", e => {
@@ -263,9 +291,54 @@ function attachFactGridAutocomplete(input) {
     });
 }
 
-document.querySelectorAll(
-  'input[name="P131"], input[name="P2"], input[name="P746"], input[name="P208"]'
-).forEach(attachFactGridAutocomplete);
+// Apply to your inputs
+document.querySelectorAll('input[name="P131"], input[name="P2"], input[name="P746"], input[name="P208"]')
+    .forEach(input => {
+        const fieldName = input.getAttribute("name");
+        attachLocalAutocomplete(input, fieldName);
+    });
+
+
+const btn = document.getElementById('runScriptBtn');
+const msg = document.getElementById('fetchMessage');
+
+btn.addEventListener('click', () => {
+    msg.textContent = "Fetching data... please wait ⏳";
+    btn.disabled = true; // prevent multiple clicks
+
+    fetch('/run-fetch-script')
+      .then(response => response.json())
+      .then(data => {
+          if (data.error) {
+              msg.textContent = "Error: " + data.error;
+              console.error(data.stderr);
+          } else {
+              msg.textContent = "Done ✅";
+              console.log(data.stdout);
+          }
+      })
+      .catch(err => {
+          msg.textContent = "An error occurred.";
+          console.error(err);
+      })
+      .finally(() => {
+          btn.disabled = false;
+      });
+});
+
+document.getElementById("runScriptBtn").addEventListener("click", async () => {
+    try {
+        const res = await fetch("/run-fetch-script");
+        const data = await res.json();
+        console.log("Script stdout:", data.stdout);
+        console.log("Script stderr:", data.stderr);
+        alert("Script finished! Check console for output.");
+    } catch (err) {
+        console.error(err);
+        alert("Error running script.");
+    }
+});
+
 
 function addField(containerId, type) {
     const container = document.getElementById(containerId);
