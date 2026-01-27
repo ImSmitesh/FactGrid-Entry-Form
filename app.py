@@ -17,17 +17,25 @@ def complexes():
 @app.route('/run-fetch-script')
 def run_fetch_script():
     try:
-        result = subprocess.run(
-            ['python3', 'fetch_data.py'],  # just the script name
-            cwd=os.path.join(os.getcwd(), 'update data'),  # run inside the folder where script is
-            capture_output=True,
-            text=True,
-            check=True,
-            stdin=subprocess.DEVNULL
+        subprocess.Popen(
+            ['python3', 'fetch_data.py'],
+            cwd=os.path.join(os.getcwd(), 'update data'),
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL,
+            start_new_session=True
         )
-        return jsonify({'stdout': result.stdout, 'stderr': result.stderr})
-    except subprocess.CalledProcessError as e:
-        return jsonify({'stdout': e.stdout, 'stderr': e.stderr, 'error': str(e)})
+
+        return jsonify({
+            "status": "started",
+            "message": "Fetch script is running in the background"
+        })
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "error": str(e)
+        }), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
