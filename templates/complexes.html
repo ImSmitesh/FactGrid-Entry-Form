@@ -343,81 +343,99 @@ document.getElementById("complexesForm").onsubmit = async e => {
     const fd = new FormData(form);
 
     /* ===============================
-       1. QID Generation for the Complex
+       1. Setup & Persistent QID Check
     =============================== */
     const testMode = true; 
-    let qid_of_complex = "";
+    // Check if we have a QID from a previously failed attempt on this page
+    let qid_of_complex = localStorage.getItem("pending_complex_qid");
 
-    if (testMode) {
-        qid_of_complex = "TEST_COMPLEX_" + Date.now();
-    } else {
-        const res = await fetch("/create-empty-item", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" }
-        });
-        const result = await res.json();
-        if (!result.id) {
-            alert("Failed to create complex item");
-            return;
-        }
-        qid_of_complex = result.id;
-    }
+    try {
+        // 2. GENERATE NEW ONLY IF NO PENDING QID EXISTS
+        if (!qid_of_complex) {
+            if (testMode) {
+                qid_of_complex = "TEST_COMPLEX_" + Date.now();
+            } else {
+                const res = await fetch("/create-empty-item", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" }
+                });
 
-    /* ===============================
-       2. Command Builder (V1 Format)
-    =============================== */
-    let v1 = "";
-    const properties = ["P2_complex", "P48_complex", "P83", "P131", "P1003", "P1095", "P76", "P471"];
+                if (!res.ok) throw new Error("Server failed to create complex item.");
 
-    // Build standard lines for the Complex item
-    properties.forEach(prop => {
-        const val = fd.get(prop);
-        if (!val) return;
-
-        const cleanProp = prop.replace("_complex", "");
-        let line = `${qid_of_complex}\t${cleanProp}\t${val}`;
-
-        // Handle references
-        const pidArr = fd.getAll(prop + "_subfields_pid[]");
-        const refArr = fd.getAll(prop + "_subfields_ref[]");
-        pidArr.forEach((pid, i) => {
-            if (refArr[i]) {
-                const s_pid = pid.replace("P", "S");
-                line += `\t${s_pid}\t${refArr[i]}`;
+                const result = await res.json();
+                if (!result.id) throw new Error("API returned no QID for complex.");
+                
+                qid_of_complex = result.id;
             }
+            // Store it immediately to prevent junk creation if data build fails
+            localStorage.setItem("pending_complex_qid", qid_of_complex);
+            console.log("New Complex QID generated and locked:", qid_of_complex);
+        } else {
+            console.log("Re-using pending Complex QID:", qid_of_complex);
+        }
+
+        /* ===============================
+           3. Command Builder (V1 Format)
+        =============================== */
+        let v1 = "";
+        const properties = ["P2_complex", "P48_complex", "P83", "P131", "P1003", "P1095", "P76", "P471"];
+
+        properties.forEach(prop => {
+            const val = fd.get(prop);
+            if (!val) return;
+
+            const cleanProp = prop.replace("_complex", "");
+            let line = `${qid_of_complex}\t${cleanProp}\t${val}`;
+
+            const pidArr = fd.getAll(prop + "_subfields_pid[]");
+            const refArr = fd.getAll(prop + "_subfields_ref[]");
+            pidArr.forEach((pid, i) => {
+                if (refArr[i]) {
+                    const s_pid = pid.replace("P", "S");
+                    line += `\t${s_pid}\t${refArr[i]}`;
+                }
+            });
+
+            v1 += line + "\n";
         });
 
-        v1 += line + "\n";
-    });
+        /* ===============================
+           4. TWO-WAY LINKS
+        =============================== */
+        if (monasteryQid) {
+            v1 += `${monasteryQid}\tP208\t${qid_of_complex}\n`;
+            v1 += `${qid_of_complex}\tP1003\t${monasteryQid}\n`;
+        } else {
+            // Optional: prevent submission if the monastery link is required
+            // throw new Error("Missing Monastery QID. Link cannot be established.");
+        }
 
-    /* ===============================
-       3. ADD THE TWO-WAY LINKS
-    =============================== */
-    if (monasteryQid) {
-        // Link 1: Monastery -> P208 (Real Estate) -> Complex
-        v1 += `${monasteryQid}\tP208\t${qid_of_complex}\n`;
+        /* ===============================
+           5. FINAL EXECUTION COMMIT
+        =============================== */
+        // Simulate or perform API data submission
+        console.log("%c >>> FINAL V1 COMMAND GENERATED <<< ", "background: #007bff; color: #fff; font-weight: bold;");
+        console.log(v1);
 
-        // Link 2: Complex -> P1003 (Diocese/User) -> Monastery
-        v1 += `${qid_of_complex}\tP1003\t${monasteryQid}\n`;
+        // --- If using API to save data ---
+        // const saveRes = await fetch("/save-complex-data", { method: "POST", body: JSON.stringify({ v1 }) });
+        // if (!saveRes.ok) throw new Error("Data submission failed.");
+
+        // If we reach here, everything is successful.
+        // Clear the pending QID so the next NEW complex gets a new ID.
+        localStorage.removeItem("pending_complex_qid");
         
-        console.log("Two-way links added between:", monasteryQid, "and", qid_of_complex);
+        // Also clear the monasteryQid from storage if this was a one-to-one relationship
+        // localStorage.removeItem("last_monastery_qid");
+
+        alert(`Success! Complex ${qid_of_complex} created and linked.`);
+
+    } catch (err) {
+        // If it fails, the qid_of_complex remains in 'pending_complex_qid'
+        // Next click uses the SAME ID.
+        console.error("Complex Execution Failed:", err.message);
+        alert(`Error: ${err.message}. QID ${qid_of_complex} retained for retry.`);
     }
-
-    /* ===============================
-       4. Output
-    =============================== */
-    console.log("========== FINAL V1 COMMAND ==========");
-    console.log(v1);
-
-    alert(`Complex Generated: ${qid_of_complex}\nLinked to Monastery: ${monasteryQid || 'None'}`);
-
-    // Download file
-    const blob = new Blob([v1], {type: "text/plain"});
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `complex_link_command.txt`;
-    a.click();
-    URL.revokeObjectURL(a.href);
 };
 
 </script>
