@@ -13,6 +13,19 @@ def monasteries():
 def complexes():
     return render_template('complexes.html')
 
+@app.route("/create-empty-item", methods=["POST"])
+def create_empty_item():
+
+    payload = {
+        "action": "wbeditentity",
+        "new": "item",
+        "format": "json"
+    }
+
+    r = requests.post(WIKIDATA_API_URL, data=payload, headers=HEADERS)
+
+    return r.json()
+
 # Endpoint to run a Python script in fetch_data/
 @app.route('/run-fetch-script')
 def run_fetch_script():

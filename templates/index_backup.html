@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Monasteries Data Entry</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background: #121212;
+    color: #e0e0e0;
+    min-height: 80vh;
+}
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #ffffff;
+}
+form {
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    width: 1190px;
+    max-width: 90vw;
+    margin: 0 auto;
+}
+.form-row {
+    display: flex;
+    align-items: center;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+.form-row label {
+    margin-left: 50px;
+    width: 480px;
+    font-weight: bold;
+}
+.form-row input {
+    width: 260px;
+    padding: 5px 10px;
+    margin-right: 10px;
+    margin-bottom: 5px;
+    border: 1px solid #444;
+    border-radius: 4px;
+    background: #2a2a2a;
+    color: #fff;
+}
+.form-row input::placeholder {
+    color: #aaa;
+}
+.form-row button {
+    padding: 5px 10px;
+    margin-right: 10px;
+    border: none;
+    background: #007bff;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    height: 28px;
+}
+.form-row button:hover {
+    background: #0056b3;
+}
+.delete-btn {
+    background: #dc3545;
+    margin-left: 5px;
+}
+.delete-btn:hover {
+    background: #a71d2a;
+}
+.subfields {
+    margin-left: 0px;
+    margin-top: 10px;
+}
+.subfields div {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 5px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+.subfields input {
+    width: 100px;
+    margin-right: 0px;
+    margin-left: 0px;
+    padding: 4px 6px;
+    border: 1px solid #444;
+    border-radius: 4px;
+    background: #2a2a2a;
+    color: #fff;
+}
+.submit-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    width: 180px;
+    font-size: 16px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    margin-left: 50px;
+    cursor: pointer;
+}
+.submit-btn:hover {
+    background: #1e7e34;
+}
+.dynamic-row {
+    display: flex;
+    align-items: center;
+    margin-left: 530px;
+    margin-top: 5px;
+    gap: 5px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Monasteries Data Entry Form</h2>
+
+<form id="monasteriesForm">
+
+    <div class="form-row">
+        <label>Label:</label>
+        <input name="L_lang[]" placeholder="Language code (e.g. en, de)">
+        <input name="L_value[]" placeholder="Label value">
+        <button type="button" onclick="addLangField('labels-container', 'Len')">Add</button>
+    </div>
+    <div id="labels-container"></div>
+
+    <div class="form-row">
+        <label>Description:</label>
+        <input name="D_lang[]" placeholder="Language code (e.g. en, de)">
+        <input name="D_value[]" placeholder="Label value">
+        <button type="button" onclick="addLangField('descriptions-container', 'Den')">Add</button>
+    </div>
+    <div id="descriptions-container"></div>
+
+    <div class="form-row">
+        <label>Also known as / Aliases:</label>
+        <input name="A_lang[]" placeholder="Language code (e.g. en, de)">
+        <input name="A_value[]" placeholder="Label value">
+        <button type="button" onclick="addLangField('aliases-container', 'Aen')">Add</button>
+    </div>
+    <div id="aliases-container"></div>
+
+    <div class="form-row">
+        <label>P2 – Instance of:</label>
+        <input name="P2" autocomplete="off">
+    </div>
+
+    <div class="form-row">
+        <label>P131 - Research projects that contributed to this data set:</label>
+        <input name="P131" autocomplete="off">
+    </div>
+
+    <div class="form-row">
+        <label>P208 – Address / Real estate:</label>
+        <input name="P208" autocomplete="off">
+        <button type="button" onclick="addField('P208_subfields', 'Qualifier')">Add Qualifier</button>
+        <button type="button" onclick="addField('P208_subfields', 'Reference')">Add Reference</button>
+    </div>
+    <div class="subfields" id="P208_subfields"></div>
+
+    <div class="form-row">
+        <label>P662 – Dedicatee:</label>
+        <input name="P662" autocomplete="off" placeholder="Should be a String">
+        <button type="button" onclick="addField('P662_subfields', 'Qualifier')">Add Qualifier</button>
+        <button type="button" onclick="addField('P662_subfields', 'Reference')">Add Reference</button>
+    </div>
+    <div class="subfields" id="P662_subfields"></div>
+
+    <div class="form-row">
+        <label>P746 – Religious order:</label>
+        <input name="P746" autocomplete="off">
+        <button type="button" onclick="addField('P746_subfields', 'Qualifier')">Add Qualifier</button>
+        <button type="button" onclick="addField('P746_subfields', 'Reference')">Add Reference</button>
+    </div>
+    <div class="subfields" id="P746_subfields"></div>
+
+    <br></br>
+    <h3 style="text-align: center;">Add Identifiers</h3>
+
+    <div class="form-row">
+        <label>P76 - GND:</label>
+        <input name="P76" autocomplete="off">
+        <button type="button" onclick="addField('P76_subfields', 'Reference')">Add Reference</button>
+    </div>
+    <div class="subfields" id="P76_subfields"></div>
+
+    <div class="form-row">
+        <label>P471 - Klosterdatenbank ID:</label>
+        <input name="P471" autocomplete="off">
+        <button type="button" onclick="addField('P471_subfields', 'Reference')">Add Reference</button>
+    </div>
+    <div class="subfields" id="P471_subfields"></div>
+
+    <button class="submit-btn" type="submit">Save V1 Command</button>
+    
+    <button class="submit-btn"
+    type="button"
+    onclick="window.location.href='{{ url_for('complexes') }}'"
+    style="
+        width: 180px;
+        white-space: nowrap;
+        float: right;
+    ">
+    Complexes Form
+    </button>
+
+
+</form>
+
+<h4 id="fetchMessage" style="text-align: center; margin: 20px 0;">
+  To get updated data from FactGrid, please click the button below (it may take a few minutes).
+</h4>
+<button type="button" class="submit-btn" id="runScriptBtn" style="width: 180px; display: block; margin: 20px auto;">Run Fetch Script</button>
+
+
+<script>
+// Map input names to their JSON files
+const autocompleteFiles = {
+  "P208": "static/data/Q16200.json",
+  "P131": "static/data/Q11295.json",
+  "P2": "static/data/Q704192.json",
+  "P746": "static/data/Q141469.json"
+};
+
+// Store loaded JSONs
+const autocompleteData = {};
+
+// Load all JSONs at start
+for (const [field, file] of Object.entries(autocompleteFiles)) {
+  fetch(file)
+    .then(res => res.json())
+    .then(data => {
+      autocompleteData[field] = data; 
+    })
+    .catch(err => console.error(`Error loading ${file}:`, err));
+}
+
+// Attach autocomplete to input
+function attachLocalAutocomplete(input, fieldName) {
+    const dropdown = document.createElement("div");
+    dropdown.style.position = "absolute";
+    dropdown.style.background = "#2a2a2a";
+    dropdown.style.color = "#fff";
+    dropdown.style.border = "1px solid #444";
+    dropdown.style.zIndex = "1000";
+    dropdown.style.display = "none";
+    document.body.appendChild(dropdown);
+
+    input.addEventListener("input", () => {
+        const q = input.value.trim().toLowerCase();
+        if (!q || !autocompleteData[fieldName]) {
+            dropdown.style.display = "none";
+            return;
+        }
+
+        const results = autocompleteData[fieldName]
+            .filter(([qid, name]) => name.toLowerCase().includes(q))
+            .slice(0, 5);
+
+        dropdown.innerHTML = "";
+        results.forEach(([qid, name]) => {
+            const opt = document.createElement("div");
+            opt.textContent = `${name} (${qid})`;
+            opt.style.padding = "5px 10px";
+            opt.style.cursor = "pointer";
+            opt.onclick = () => {
+                input.value = qid; // only QID in input
+                dropdown.style.display = "none";
+            };
+            dropdown.appendChild(opt);
+        });
+
+        if (results.length) {
+            const rect = input.getBoundingClientRect();
+            dropdown.style.top = rect.bottom + window.scrollY + "px";
+            dropdown.style.left = rect.left + window.scrollX + "px";
+            dropdown.style.minWidth = rect.width + "px";
+            dropdown.style.display = "block";
+        } else {
+            dropdown.style.display = "none";
+        }
+    });
+
+    document.addEventListener("click", e => {
+        if (e.target !== input) dropdown.style.display = "none";
+    });
+}
+
+// Apply to your inputs
+document.querySelectorAll('input[name="P131"], input[name="P2"], input[name="P746"], input[name="P208"]')
+    .forEach(input => {
+        const fieldName = input.getAttribute("name");
+        attachLocalAutocomplete(input, fieldName);
+    });
+
+
+const btn = document.getElementById('runScriptBtn');
+const msg = document.getElementById('fetchMessage');
+
+btn.addEventListener('click', () => {
+    msg.textContent = "Fetching data... please wait ⏳";
+    btn.disabled = true; // prevent multiple clicks
+
+    fetch('/run-fetch-script')
+      .then(response => response.json())
+      .then(data => {
+          if (data.error) {
+              msg.textContent = "Error: " + data.error;
+              console.error(data.stderr);
+          } else {
+              msg.textContent = "Done ✅";
+              console.log(data.stdout);
+          }
+      })
+      .catch(err => {
+          msg.textContent = "An error occurred.";
+          console.error(err);
+      })
+      .finally(() => {
+          btn.disabled = false;
+      });
+});
+
+document.getElementById("runScriptBtn").addEventListener("click", async () => {
+    try {
+        const res = await fetch("/run-fetch-script");
+        const data = await res.json();
+        console.log("Script stdout:", data.stdout);
+        console.log("Script stderr:", data.stderr);
+        alert("Script finished! Check console for output.");
+    } catch (err) {
+        console.error(err);
+        alert("Error running script.");
+    }
+});
+
+
+function addField(containerId, type) {
+    const container = document.getElementById(containerId);
+    const div = document.createElement('div');
+    div.className = 'dynamic-row';
+    if (type === 'Qualifier') {
+        div.innerHTML = `Begin Date: <input type="date" name="${containerId}_begin[]">
+                         End Date: <input type="date" name="${containerId}_end[]">
+                         <button type="button" class="delete-btn" onclick="this.parentNode.remove()">Delete</button>`;
+    } else {
+        div.innerHTML = `<select name="${containerId}_pid[]">
+                            <option value="P471">P471 – Klosterdatenbank ID</option>
+                            <option value="P146">P146 – Online Information</option>
+                         </select>
+                         <input type="text" name="${containerId}_ref[]">
+                         <button type="button" class="delete-btn" onclick="this.parentNode.remove()">Remove</button>`;
+    }
+    container.appendChild(div);
+}
+
+function addLangField(containerId, type) {
+    const container = document.getElementById(containerId);
+    const div = document.createElement('div');
+    div.className = 'dynamic-row';
+    div.innerHTML = `<input name="${type}_lang[]" placeholder="Language code">
+                     <input name="${type}_value[]" placeholder="Value">
+                     <button type="button" class="delete-btn" onclick="this.parentNode.remove()">Delete</button>`;
+    container.appendChild(div);
+}
+
+document.getElementById("monasteriesForm").onsubmit = async e => {
+
+    e.preventDefault();
+
+    const fd = new FormData(e.target);
+    const data = {};
+
+    const fields = ["P131","P2","P746","P662","P208","P471","P76"];
+
+    const fmt = d => d ? `+${d}T00:00:00Z/11` : "";
+
+    /*
+    ======================================
+    Build qualifier/reference row by row
+    ======================================
+    */
+
+    function buildSubfieldCommand(field) {
+
+        const sub = field + "_subfields";
+
+        const rows = document.querySelectorAll(`#${sub} .dynamic-row`);
+
+        const parts = [];
+
+        const fmt = d => d ? `+${d}T00:00:00Z/11` : "";
+
+        rows.forEach(row => {
+
+            const pidInput = row.querySelector(
+                `select[name="${sub}_pid[]"], input[name="${sub}_pid[]"]`
+            );
+
+            if (!pidInput) return;
+
+            const pid = pidInput.value.trim();
+            if (!pid) return;
+
+            const dateBegin = row.querySelector(`input[name="${sub}_begin[]"]`);
+            const dateEnd   = row.querySelector(`input[name="${sub}_end[]"]`);
+            const refInput  = row.querySelector(`input[name="${sub}_ref[]"]`);
+
+            const beginVal = dateBegin ? dateBegin.value.trim() : "";
+            const endVal   = dateEnd ? dateEnd.value.trim() : "";
+            const refVal   = refInput ? refInput.value.trim() : "";
+
+            /*
+            ===============================
+            Date qualifiers
+            ===============================
+            */
+
+            if (pid === "P49" || pid === "P50") {
+
+                if (beginVal) parts.push(`${pid} ${fmt(beginVal)}`);
+                if (endVal) parts.push(`${pid} ${fmt(endVal)}`);
+
+            }
+
+            /*
+            ===============================
+            Reference / text qualifier
+            ===============================
+            */
+
+            else {
+
+                if (refVal) parts.push(`${pid} ${refVal}`);
+
+            }
+
+        });
+
+        return parts.join("  ");
+    }
+
+    /*
+    ======================================
+    Build main claim data
+    ======================================
+    */
+
+    fields.forEach(field => {
+
+        let value = fd.get(field);
+        if (!value) return;
+
+        if (field === "P662") value = `"${value}"`;
+
+        const qualifierString = buildSubfieldCommand(field);
+
+        data[field] = qualifierString
+            ? `${value} ${qualifierString}`
+            : value;
+    });
+
+    /*
+    ======================================
+    Multilingual fields
+    ======================================
+    */
+
+    ["L","D","A"].forEach(prefix => {
+
+        const langs = fd.getAll(`${prefix}_lang[]`);
+        const vals  = fd.getAll(`${prefix}_value[]`);
+
+        langs.forEach((lang,i) => {
+
+            if (!lang || !vals[i]) return;
+
+            const key = `${prefix}${lang.trim()}`;
+
+            if (!data[key]) data[key] = [];
+
+            data[key].push(`"${vals[i]}"`);
+        });
+
+    });
+
+    /*
+    ======================================
+    Test Mode QID generation
+    ======================================
+    */
+
+    const testMode = true;
+
+    let qid = fd.get("qid");
+
+    if (!qid) {
+
+        if (testMode) {
+
+            qid = "TEST_QID_" + Date.now();
+            console.log("TEST MODE QID:", qid);
+
+        } else {
+
+            const res = await fetch("/create-empty-item", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+            });
+
+            const result = await res.json();
+
+            if (!result.id) {
+                alert("Failed to create item");
+                return;
+            }
+
+            qid = result.id;
+        }
+    }
+
+    /*
+    ======================================
+    Command builder
+    ======================================
+    */
+
+    let command = "CREATE\n";
+
+    Object.entries(data).forEach(([k,v]) => {
+
+        if (Array.isArray(v)) {
+            v.forEach(x => command += `LAST\t${k}\t${x}\n`);
+        }
+        else {
+            command += `LAST\t${k}\t${v}\n`;
+        }
+
+    });
+
+    console.log("========== COMMAND ==========");
+    console.log(command || "EMPTY COMMAND");
+
+    alert("Check console output (Test Mode)");
+
+};
+</script>
+
+</body>
+</html>

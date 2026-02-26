@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Monasteries Data Entry</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  background: #121212;
+  color: #e0e0e0;
+  min-height: 80vh;
+}
+
+h2 {
+  text-align: center; /* top center horizontally */
+  margin-bottom: 20px;
+  color: #ffffff;
+}
+
+
+.form-container {
+  display: flex;
+  justify-content: center; /* horizontally center the form */
+}
+
+form {
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.5);
+  width: 670px;
+  max-width: 90vw;
+  margin: 0 auto; /* center horizontally */
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.form-row label {
+  width: 250px;
+  font-weight: bold;
+}
+
+.form-row input {
+  width: 260px;
+  padding: 5px 8px;
+  margin-right: 10px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: #2a2a2a;
+  color: #fff;
+}
+
+.form-row input::placeholder {
+  color: #aaa;
+}
+
+.form-row button {
+  width: 120px;
+  padding: 5px 10px;
+  margin-right: 5px;
+  border: none;
+  background: #007bff;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.form-row button:hover {
+  background: #0056b3;
+}
+
+.subfields {
+  margin-left: 250px; /* aligns with input field */
+  margin-top: 10px;
+}
+
+.subfields div {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+  flex-wrap: nowrap;
+  white-space: nowrap;   /* prevents text from wrapping */
+}
+
+.subfields input {
+  width: 100px;
+  margin-right: 10px;
+  padding: 4px 6px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: #2a2a2a;
+  color: #fff;
+}
+
+.remove-btn {
+  background: #dc3545;
+  margin-left: 5px;
+  padding: 4px 8px;
+}
+
+.remove-btn:hover {
+  background: #a71d2a;
+}
+
+.submit-btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  width: 150px;
+  font-size: 16px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.submit-btn:hover {
+  background: #1e7e34;
+}
+
+
+</style>
+</head>
+
+<body>
+
+<h2>Complexes Data Entry Form</h2>
+
+<form id="complexesForm">
+
+    <div class="form-row">
+        <label>P2 - Instance of:</label>
+        <input name="P2_complex" value="Building Complex" readonly>
+    </div>
+
+    <div class="form-row">
+        <label>P48 - Coordinate location:</label>
+        <input name="P48_complex" type="text" autocomplete="off" placeholder="@Lat./Long. (e.g. @52.12345/9.12345)">
+    </div>
+
+    <div class="form-row">
+        <label>P83 - Place of address:</label>
+        <input name="P83" autocomplete="off">
+    </div>
+
+    <div class="form-row">
+        <label>P131 - Research projects:</label>
+        <input name="P131" autocomplete="off">
+        <button type="button" onclick="addField('P131_subfields', 'Reference')">Add Reference</button>
+    </div>
+    <div class="subfields" id="P131_subfields"></div>
+
+    <div class="form-row">
+        <label>P1003 - Diocese:</label>
+        <input name="P1003" autocomplete="off">
+        <button type="button" onclick="addField('P1003_subfields', 'Reference')">Add Reference</button>
+    </div>
+    <div class="subfields" id="P1003_subfields"></div>
+
+    <div class="form-row">
+        <label>P1095 - Users:</label>
+        <input name="P1095" autocomplete="off">
+        <button type="button" onclick="addField('P1095_subfields', 'Reference')">Add Reference</button>
+    </div>
+    <div class="subfields" id="P1095_subfields"></div>
+
+    <br></br>
+    <h3 style="text-align: center;">Add Identifiers</h3>
+
+    <div class="form-row">
+        <label>P76 - GND:</label>
+        <input name="P76" autocomplete="off">
+        <button type="button" onclick="addField('P76_subfields', 'Reference')">Add Reference</button>
+    </div>
+    <div class="subfields" id="P76_subfields"></div>
+
+    <div class="form-row">
+        <label>P471 - Klosterdatenbank ID:</label>
+        <input name="P471" autocomplete="off">
+        <button type="button" onclick="addField('P471_subfields', 'Reference')">Add Reference</button>
+    </div>
+    <div class="subfields" id="P471_subfields"></div>
+
+<button type="submit" class="submit-btn"
+style="
+      width: 180px;
+      white-space: nowrap;
+">
+Add Entry</button>
+
+</form>
+
+<script>
+
+
+// Map input names to their JSON files
+const autocompleteFiles = {
+  "P83": "static/data/Q8.json",
+  "P1003": "static/data/Q153166.json",
+  "P131": "static/data/Q11295.json",
+};
+
+// Store loaded JSONs
+const autocompleteData = {};
+
+// Load all JSONs at start
+for (const [field, file] of Object.entries(autocompleteFiles)) {
+  fetch(file)
+    .then(res => res.json())
+    .then(data => {
+      autocompleteData[field] = data; // data should be array of [QID, Name]
+    })
+    .catch(err => console.error(`Error loading ${file}:`, err));
+}
+
+// Attach autocomplete to input
+function attachLocalAutocomplete(input, fieldName) {
+    const dropdown = document.createElement("div");
+    dropdown.style.position = "absolute";
+    dropdown.style.background = "#2a2a2a";
+    dropdown.style.color = "#fff";
+    dropdown.style.border = "1px solid #444";
+    dropdown.style.zIndex = "1000";
+    dropdown.style.display = "none";
+    document.body.appendChild(dropdown);
+
+    input.addEventListener("input", () => {
+        const q = input.value.trim().toLowerCase();
+        if (!q || !autocompleteData[fieldName]) {
+            dropdown.style.display = "none";
+            return;
+        }
+
+        const results = autocompleteData[fieldName]
+            .filter(([qid, name]) => name.toLowerCase().includes(q))
+            .slice(0, 5);
+
+        dropdown.innerHTML = "";
+        results.forEach(([qid, name]) => {
+            const opt = document.createElement("div");
+            opt.textContent = `${name} (${qid})`;
+            opt.style.padding = "5px 10px";
+            opt.style.cursor = "pointer";
+            opt.onclick = () => {
+                input.value = qid; // only QID in input
+                dropdown.style.display = "none";
+            };
+            dropdown.appendChild(opt);
+        });
+
+        if (results.length) {
+            const rect = input.getBoundingClientRect();
+            dropdown.style.top = rect.bottom + window.scrollY + "px";
+            dropdown.style.left = rect.left + window.scrollX + "px";
+            dropdown.style.minWidth = rect.width + "px";
+            dropdown.style.display = "block";
+        } else {
+            dropdown.style.display = "none";
+        }
+    });
+
+    document.addEventListener("click", e => {
+        if (e.target !== input) dropdown.style.display = "none";
+    });
+}
+
+// Apply to your inputs
+document.querySelectorAll('input[name="P131"], input[name="P83"], input[name="P1003"]')
+    .forEach(input => {
+        const fieldName = input.getAttribute("name");
+        attachLocalAutocomplete(input, fieldName);
+    });
+
+
+
+function addField(containerId, type) {
+  const container = document.getElementById(containerId);
+  const div = document.createElement('div');
+
+  if (type === 'Qualifier') {
+    div.innerHTML = `
+      Begin Date: <input type="date" name="${containerId}_begin[]">
+      End Date: <input type="date" name="${containerId}_end[]">
+      <button type="button" class="remove-btn" onclick="this.parentNode.remove()">Remove</button>
+    `;
+  } else {
+    div.innerHTML = `
+      <select name="${containerId}_pid[]">
+        <option value="P471">P471 – Klosterdatenbank ID</option>
+        <option value="P146">P146 – Online Information</option>
+      </select>
+      <input type="text" name="${containerId}_ref[]">
+      <button type="button" class="remove-btn" onclick="this.parentNode.remove()">Remove</button>
+    `;
+  }
+
+  container.appendChild(div);
+}
+
+function collectFormData(form) {
+  const fd = new FormData(form);
+  const data = {};
+  for (const [k, v] of fd.entries()) {
+    if (k.endsWith("[]")) {
+      const key = k.replace("[]", "");
+      if (!data[key]) data[key] = [];
+      data[key].push(v);
+    } else {
+      data[k] = v;
+    }
+  }
+  return data;
+}
+
+document.getElementById("complexesForm").onsubmit = e => {
+  e.preventDefault();
+  const form = e.target;
+  const fd = new FormData(form);
+
+  let v1 = "CREATE\n";
+
+  // List of main properties in the form
+  const properties = ["P48_complex","P83","P2_complex","P1003","P131","P1095","P471","P76"];
+
+  properties.forEach(prop => {
+    const val = fd.get(prop);
+    if (!val) return;
+
+    let line = `LAST\t${prop.replace("_complex","")}\t${val}`;
+
+    // Handle references
+    const pidArr = fd.getAll(prop + "_subfields_pid[]");
+    const refArr = fd.getAll(prop + "_subfields_ref[]");
+    pidArr.forEach((pid, i) => {
+      line += `\t${pid}\t${refArr[i] || ""}`;
+    });
+
+    // Handle qualifiers (dates)
+    const beginArr = fd.getAll(prop + "_subfields_begin[]");
+    const endArr = fd.getAll(prop + "_subfields_end[]");
+    beginArr.forEach((b,i) => {
+      const e = endArr[i] || "";
+      line += `\tP49\t${b}\tP50\t${e}`;
+    });
+
+    v1 += line + "\n";
+});
+
+  // Download V1 file
+  const blob = new Blob([v1], {type:"text/plain"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `complexes_v1.txt`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+
+</script>
+
+</body>
+</html>

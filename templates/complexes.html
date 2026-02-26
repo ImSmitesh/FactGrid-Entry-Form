@@ -192,7 +192,7 @@ style="
       width: 180px;
       white-space: nowrap;
 ">
-Save V1 Command</button>
+Add Entry</button>
 
 </form>
 
@@ -318,47 +318,106 @@ function collectFormData(form) {
   return data;
 }
 
-document.getElementById("complexesForm").onsubmit = e => {
-  e.preventDefault();
-  const form = e.target;
-  const fd = new FormData(form);
+// Variable to hold the QID throughout the session
+let monasteryQid = null;
 
-  let v1 = "CREATE\n";
+document.addEventListener("DOMContentLoaded", () => {
+    // 1. Extract the QID from the URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const passedQid = urlParams.get('monastery_qid');
 
-  // List of main properties in the form
-  const properties = ["P48_complex","P83","P2_complex","P1003","P131","P1095","P471","P76"];
-
-  properties.forEach(prop => {
-    const val = fd.get(prop);
-    if (!val) return;
-
-    let line = `LAST\t${prop.replace("_complex","")}\t${val}`;
-
-    // Handle references
-    const pidArr = fd.getAll(prop + "_subfields_pid[]");
-    const refArr = fd.getAll(prop + "_subfields_ref[]");
-    pidArr.forEach((pid, i) => {
-      line += `\t${pid}\t${refArr[i] || ""}`;
-    });
-
-    // Handle qualifiers (dates)
-    const beginArr = fd.getAll(prop + "_subfields_begin[]");
-    const endArr = fd.getAll(prop + "_subfields_end[]");
-    beginArr.forEach((b,i) => {
-      const e = endArr[i] || "";
-      line += `\tP49\t${b}\tP50\t${e}`;
-    });
-
-    v1 += line + "\n";
+    // 2. Assign to variable and print to console
+    if (passedQid) {
+        monasteryQid = passedQid;
+        
+        console.log("%c >>> MONASTERY QID RECEIVED <<< ", "background: #28a745; color: #fff; font-weight: bold;");
+        console.log("Variable 'monasteryQid' is now set to:", monasteryQid);
+    } else {
+        console.log("Notice: No Monastery QID was passed to this form.");
+    }
 });
 
-  // Download V1 file
-  const blob = new Blob([v1], {type:"text/plain"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `complexes_v1.txt`;
-  a.click();
-  URL.revokeObjectURL(a.href);
+document.getElementById("complexesForm").onsubmit = async e => {
+    e.preventDefault();
+    const form = e.target;
+    const fd = new FormData(form);
+
+    /* ===============================
+       1. QID Generation for the Complex
+    =============================== */
+    const testMode = true; 
+    let qid_of_complex = "";
+
+    if (testMode) {
+        qid_of_complex = "TEST_COMPLEX_" + Date.now();
+    } else {
+        const res = await fetch("/create-empty-item", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" }
+        });
+        const result = await res.json();
+        if (!result.id) {
+            alert("Failed to create complex item");
+            return;
+        }
+        qid_of_complex = result.id;
+    }
+
+    /* ===============================
+       2. Command Builder (V1 Format)
+    =============================== */
+    let v1 = "";
+    const properties = ["P2_complex", "P48_complex", "P83", "P131", "P1003", "P1095", "P76", "P471"];
+
+    // Build standard lines for the Complex item
+    properties.forEach(prop => {
+        const val = fd.get(prop);
+        if (!val) return;
+
+        const cleanProp = prop.replace("_complex", "");
+        let line = `${qid_of_complex}\t${cleanProp}\t${val}`;
+
+        // Handle references
+        const pidArr = fd.getAll(prop + "_subfields_pid[]");
+        const refArr = fd.getAll(prop + "_subfields_ref[]");
+        pidArr.forEach((pid, i) => {
+            if (refArr[i]) {
+                const s_pid = pid.replace("P", "S");
+                line += `\t${s_pid}\t${refArr[i]}`;
+            }
+        });
+
+        v1 += line + "\n";
+    });
+
+    /* ===============================
+       3. ADD THE TWO-WAY LINKS
+    =============================== */
+    if (monasteryQid) {
+        // Link 1: Monastery -> P208 (Real Estate) -> Complex
+        v1 += `${monasteryQid}\tP208\t${qid_of_complex}\n`;
+
+        // Link 2: Complex -> P1003 (Diocese/User) -> Monastery
+        v1 += `${qid_of_complex}\tP1003\t${monasteryQid}\n`;
+        
+        console.log("Two-way links added between:", monasteryQid, "and", qid_of_complex);
+    }
+
+    /* ===============================
+       4. Output
+    =============================== */
+    console.log("========== FINAL V1 COMMAND ==========");
+    console.log(v1);
+
+    alert(`Complex Generated: ${qid_of_complex}\nLinked to Monastery: ${monasteryQid || 'None'}`);
+
+    // Download file
+    const blob = new Blob([v1], {type: "text/plain"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `complex_link_command.txt`;
+    a.click();
+    URL.revokeObjectURL(a.href);
 };
 
 </script>

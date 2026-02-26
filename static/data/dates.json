@@ -1,0 +1,262 @@
+[
+    [
+        "P112",
+        "* Date [literal]",
+        "to state a peculiar date statement (e.g. in the Illuminati calendar)."
+    ],
+    [
+        "P1079",
+        "Banns of marriage, date",
+        null
+    ],
+    [
+        "P49",
+        "Begin date",
+        "start in time (including the date: [\u2192), e.g. of a longer event; also as a qualifier e.g. for the beginning of a marriage. Counterpart: P50 End date."
+    ],
+    [
+        "P1124",
+        "Begin date (terminus ante quem)",
+        "latest possible date of the begin of a period"
+    ],
+    [
+        "P1126",
+        "Begin date (terminus post quem)",
+        "earliest possible date of the beginning of a period"
+    ],
+    [
+        "P39",
+        "Beginning of composition",
+        "use this property if a document has been written over a longer period of time"
+    ],
+    [
+        "P506",
+        "Cause of end",
+        "qualifier to define the end of a time span with more precision"
+    ],
+    [
+        "P1060",
+        "Circumcision Date (religious)",
+        null
+    ],
+    [
+        "P779",
+        "Commemorative date",
+        "specify with P700 e.g. \"Foundation day\""
+    ],
+    [
+        "P106",
+        "Date",
+        "time and date something took place, existed or a statement was true"
+    ],
+    [
+        "P41",
+        "Date after",
+        "the earliest possible date for something"
+    ],
+    [
+        "P96",
+        "Date as stated",
+        "Qualifier (e.g. if you could previously specify a day where only a year was mentioned. Alternatively, P35 is available for text input."
+    ],
+    [
+        "P43",
+        "Date before",
+        "the latest possible date for something"
+    ],
+    [
+        "P1371",
+        "Date of Blessing",
+        "Solemn introduction, consecration to a Christian religious office, or admission to a religious life community"
+    ],
+    [
+        "P37",
+        "Date of baptism",
+        "Date on which a person was baptized"
+    ],
+    [
+        "P77",
+        "Date of birth",
+        "date on which a person was born"
+    ],
+    [
+        "P40",
+        "Date of burial",
+        "See also P38 date of death"
+    ],
+    [
+        "P182",
+        "Date of confirmation",
+        "Date on which a person was confirmed"
+    ],
+    [
+        "P321",
+        "Date of consecration / ordination",
+        "Date of a solemn dedication of a building or office in a religious context"
+    ],
+    [
+        "P38",
+        "Date of death",
+        "date on which a person died"
+    ],
+    [
+        "P303",
+        "Date of discovery or invention",
+        "Datum, an dem das Objekt entdeckt oder erfunden wurde"
+    ],
+    [
+        "P394",
+        "Date of ennoblement",
+        "the date when a person was ennobled"
+    ],
+    [
+        "P432",
+        "Date of finding",
+        "to state the date when specific web information was retrieved under this link or when a specific source, printed or electronic, was consulted"
+    ],
+    [
+        "P412",
+        "Date of first production",
+        "use if a text for instance was composed far earlier than extant copies"
+    ],
+    [
+        "P214",
+        "Date of last will",
+        "Date on which the last will of a person was set up"
+    ],
+    [
+        "P551",
+        "Date of premiere",
+        "to state the date when a play was first staged"
+    ],
+    [
+        "P222",
+        "Date of publication",
+        "The standard date as taken from a title page. Use P96 if you know the exact day, week, or month of the publication"
+    ],
+    [
+        "P44",
+        "Date of receipt",
+        "date when a letter arrived"
+    ],
+    [
+        "P459",
+        "Date of retirement",
+        "property to be used with qualifiers the time of retirement etc."
+    ],
+    [
+        "P50",
+        "End date",
+        "the final point of a period (excluding that date: \u2192])"
+    ],
+    [
+        "P1123",
+        "End date (terminus ante quem)",
+        "latest possible date of the end of a period"
+    ],
+    [
+        "P1125",
+        "End date (terminus post quem)",
+        "earliest possible date of the end of a period"
+    ],
+    [
+        "P46",
+        "End of events reported",
+        "e.g. last date of a diary"
+    ],
+    [
+        "P290",
+        "First documented date",
+        "first date of work or activity (use if date of birth is missing), floruit"
+    ],
+    [
+        "P289",
+        "Gregorian calendar start date",
+        "Datum der Einf\u00fchrung des Gregorianischen Kalenders"
+    ],
+    [
+        "P854",
+        "In the the reign / dynasty / time frame",
+        "to refer to a time frame, qualify with P933 to state a year"
+    ],
+    [
+        "P88",
+        "Julian calendar stabiliser",
+        "qualifier to note the Julian date in string format (1785-03-21) to have a stabilised display on the (by default Gregorian) Query Service"
+    ],
+    [
+        "P291",
+        "Last documented date",
+        "to give the latest date in a time span of documentation or presumable existence, floruit"
+    ],
+    [
+        "P291",
+        "Last documented date",
+        "to give the latest date in a time span of documentation or presumable existence, floruit"
+    ],
+    [
+        "P612",
+        "Last modified",
+        "e.g. to state, when certain documents were first bound together in this combination, or when a file received its specific material composition"
+    ],
+    [
+        "P510",
+        "Local time/ time zone",
+        "to qualify a P509 time statement"
+    ],
+    [
+        "Q538485",
+        "Month name",
+        "name of a month shared by several calendars systems"
+    ],
+    [
+        "P853",
+        "Period / Style",
+        "to classify objects according to appearance or style criteria (time)"
+    ],
+    [
+        "P785",
+        "Precision of begin date",
+        "qualifier to specify a begin date"
+    ],
+    [
+        "P787",
+        "Precision of begin date [string]",
+        "qualifier to specify a begin date; string alternate to P785"
+    ],
+    [
+        "P467",
+        "Precision of date",
+        "FactGrid qualifier for the specific determination of the exactness of a date"
+    ],
+    [
+        "P786",
+        "Precision of end date",
+        "qualifier to specify an end date"
+    ],
+    [
+        "P788",
+        "Precision of end date [string]",
+        "qualifier to specify an end date; string alternate to P786"
+    ],
+    [
+        "P818",
+        "Renewal date",
+        "date on which something is renewed, for example a contract or subscription"
+    ],
+    [
+        "P45",
+        "Start time of reported events",
+        "e.g. first date in a diary"
+    ],
+    [
+        "P509",
+        "Time of day",
+        "use  18:22:45 format for 6 pm, 22 minutes 45 seconds. Add Property 510 to name the place or time Zone"
+    ],
+    [
+        "Q538483",
+        "Year name",
+        "name of a year shared by several documents, data sets or organizations"
+    ]
+]

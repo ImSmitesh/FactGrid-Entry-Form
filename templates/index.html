@@ -119,7 +119,7 @@ form {
 <body>
 
 <h2>Monasteries Data Entry Form</h2>
-
+<input type="hidden" name="qid" id="qidField">
 <form id="monasteriesForm">
 
     <div class="form-row">
@@ -197,11 +197,20 @@ form {
     </div>
     <div class="subfields" id="P471_subfields"></div>
 
-    <button class="submit-btn" type="submit">Save V1 Command</button>
+    <div id="statusMessage" style="
+    display: none; 
+    margin: 20px 50px; 
+    padding: 15px; 
+    border-radius: 6px; 
+    text-align: center; 
+    font-weight: bold;">
+    </div>
+
+    <button class="submit-btn" type="submit">Add Entry</button>
     
     <button class="submit-btn"
     type="button"
-    onclick="window.location.href='{{ url_for('complexes') }}'"
+    id="complexesBtn" 
     style="
         width: 180px;
         white-space: nowrap;
@@ -239,6 +248,21 @@ for (const [field, file] of Object.entries(autocompleteFiles)) {
       autocompleteData[field] = data; 
     })
     .catch(err => console.error(`Error loading ${file}:`, err));
+}
+
+function showStatus(message, isError = false) {
+    const statusDiv = document.getElementById("statusMessage");
+    statusDiv.textContent = message;
+    statusDiv.style.display = "block";
+    
+    // Green for success, Red for error
+    statusDiv.style.background = isError ? "#dc3545" : "#28a745";
+    statusDiv.style.color = "white";
+
+    // Optional: Auto-hide after 10 seconds
+    setTimeout(() => {
+        statusDiv.style.display = "none";
+    }, 10000);
 }
 
 // Attach autocomplete to input
@@ -340,15 +364,141 @@ document.getElementById("runScriptBtn").addEventListener("click", async () => {
     }
 });
 
+let qualifierOptions = [];
+
+fetch('/static/data/dates.json')
+  .then(res => res.json())
+  .then(data => {
+      qualifierOptions = data.sort((a, b) => {
+          const numA = parseInt(a[0].replace('P',''));
+          const numB = parseInt(b[0].replace('P',''));
+          return numA - numB;
+      });
+  })
+  .catch(err => console.error(err));
+
+function createQualifierInput(rowDiv, containerId, pid) {
+
+    // Remove old qualifier boxes first
+    rowDiv.querySelectorAll(".qual-extra").forEach(el => {
+        if (!el.classList.contains("delete-btn")) {
+            el.remove();
+        }
+    });
+
+    let html = "";
+
+    // If PID is P49 or P50 → date box
+    if (pid === "P49" || pid === "P50") {
+
+        html = `
+        <div class="qual-extra" style="display:flex; align-items:center; gap:6px; margin-left:10px;">
+            Enter Date:
+            <input type="date" name="${containerId}_begin[]" class="qual-input">
+        </div>
+        `;
+
+    } else {
+
+        html = `
+        <input type="text"
+               name="${containerId}_ref[]"
+               placeholder="Qualifier value"
+               class="qual-extra qual-input"
+               style="width:200px;">
+        `;
+    }
+
+    rowDiv.insertAdjacentHTML("beforeend", html);
+}
 
 function addField(containerId, type) {
     const container = document.getElementById(containerId);
     const div = document.createElement('div');
     div.className = 'dynamic-row';
+
     if (type === 'Qualifier') {
-        div.innerHTML = `Begin Date: <input type="date" name="${containerId}_begin[]">
-                         End Date: <input type="date" name="${containerId}_end[]">
-                         <button type="button" class="delete-btn" onclick="this.parentNode.remove()">Delete</button>`;
+        const selectBtn = document.createElement('button');
+        selectBtn.type = 'button';
+        selectBtn.textContent = 'Select Qualifier';
+        selectBtn.style.background = '#ffffff'; // white background
+        selectBtn.style.color = '#000';         // black text
+        selectBtn.style.border = '1px solid #444';
+        selectBtn.style.borderRadius = '0';
+        selectBtn.style.cursor = 'pointer';
+        selectBtn.style.width = '188px';
+
+        const pidInput = document.createElement('input');
+        pidInput.type = 'hidden';
+        pidInput.name = `${containerId}_pid[]`;
+
+        const dropdown = document.createElement('div');
+        dropdown.style.position = 'absolute';
+        dropdown.style.background = '#ffffff'; // white background
+        dropdown.style.color = '#000';         // black text
+        dropdown.style.border = '1px solid #444';
+        dropdown.style.maxHeight = '200px';
+        dropdown.style.overflowY = 'auto';
+        dropdown.style.padding = '5px';
+        dropdown.style.display = 'none';
+        dropdown.style.zIndex = '1000';
+        document.body.appendChild(dropdown);
+
+        function populateDropdown() {
+            dropdown.innerHTML = '';
+            qualifierOptions.forEach(opt => {
+                const pid = opt[0];
+                const label = opt[1] || '';
+                const desc = opt[2] || '';
+                const optionDiv = document.createElement('div');
+                optionDiv.style.padding = '5px';
+                optionDiv.style.cursor = 'pointer';
+                optionDiv.style.borderBottom = '1px solid #ccc';
+                optionDiv.style.fontWeight = 'normal'; // normal text
+                optionDiv.innerHTML = `${pid} - ${label}<br><small>${desc}</small>`;
+                optionDiv.onclick = () => {
+                    pidInput.value = pid;
+
+                    // Clear row content except delete button
+                    const existingInputs = div.querySelectorAll(".qual-input");
+                    existingInputs.forEach(el => el.remove());
+
+                    selectBtn.textContent = `${pid} - ${label}`;
+                    dropdown.style.display = 'none';
+
+                    createQualifierInput(div, containerId, pid);
+                };
+                dropdown.appendChild(optionDiv);
+            });
+        }
+
+        selectBtn.onclick = () => {
+            if (!qualifierOptions.length) {
+                alert("Data not loaded yet, try again in a moment.");
+                return;
+            }
+            populateDropdown();
+            const rect = selectBtn.getBoundingClientRect();
+            dropdown.style.top = rect.bottom + window.scrollY + 'px';
+            dropdown.style.left = rect.left + window.scrollX + 'px';
+            dropdown.style.minWidth = rect.width + 'px';
+            dropdown.style.display = 'block';
+        };
+
+        document.addEventListener('click', e => {
+            if (e.target !== selectBtn) dropdown.style.display = 'none';
+        });
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.onclick = () => div.remove();
+
+        div.appendChild(selectBtn);
+        div.appendChild(pidInput);
+        div.appendChild(deleteBtn);
+
     } else {
         div.innerHTML = `<select name="${containerId}_pid[]">
                             <option value="P471">P471 – Klosterdatenbank ID</option>
@@ -357,6 +507,7 @@ function addField(containerId, type) {
                          <input type="text" name="${containerId}_ref[]">
                          <button type="button" class="delete-btn" onclick="this.parentNode.remove()">Remove</button>`;
     }
+
     container.appendChild(div);
 }
 
@@ -370,58 +521,184 @@ function addLangField(containerId, type) {
     container.appendChild(div);
 }
 
-document.getElementById("monasteriesForm").onsubmit = e => {
+document.getElementById("complexesBtn").addEventListener("click", function() {
+    // Get the QID we stored during the "Save V1 Command" submit
+    const lastQid = localStorage.getItem("last_monastery_qid");
+    
+    let targetUrl = "{{ url_for('complexes') }}";
+    
+    if (lastQid) {
+        // Append the QID as a URL parameter
+        targetUrl += `?monastery_qid=${lastQid}`;
+    }
+    
+    window.location.href = targetUrl;
+});
+
+document.getElementById("monasteriesForm").onsubmit = async e => {
+
     e.preventDefault();
+
     const fd = new FormData(e.target);
+
     const data = {};
 
-    ["P131", "P2", "P746", "P662", "P208", "P471","P76"].forEach(field => {
-        let value = fd.get(field);
-        if (!value) return;
-        if (field === "P662") value = `"${value}"`;
+    const fields = ["P131","P2","P746","P662","P208","P471","P76"];
 
+    const fmt = d => d ? `+${d}T00:00:00Z/11` : "";
+
+    /* ===============================
+       Qualifier Builder (Stable Version)
+    =============================== */
+
+    const buildQualifierParts = (field) => {
         const sub = field + "_subfields";
-        const refs = fd.getAll(sub + "_pid[]").map((p, i) =>
-            p + " " + (fd.getAll(sub + "_ref[]")[i] || "")
-        );
+        const rows = document.querySelectorAll(`#${sub} .dynamic-row`);
+        const parts = [];
 
         const fmt = d => d ? `+${d}T00:00:00Z/11` : "";
-        const begins = fd.getAll(sub + "_begin[]");
-        const ends = fd.getAll(sub + "_end[]");
-        const quals = begins.map((b, i) =>
-            `P49 ${fmt(b)} P50 ${fmt(ends[i])}`.trim()
-        );
 
-        const all = [...quals, ...refs].join("  ").trim();
-        data[field] = all ? `${value} ${all}` : value;
-    });
+        rows.forEach(row => {
+            // 1. Try to find the PID (for both Qualifiers and References)
+            // References use a <select>, Qualifiers use a hidden <input>
+            const pidSource = row.querySelector(`input[name="${sub}_pid[]"], select[name="${sub}_pid[]"]`);
+            if (!pidSource) return;
 
-    ["L","D","A"].forEach(p => {
-        const l = fd.getAll(`${p}_lang[]`);
-        const v = fd.getAll(`${p}_value[]`);
-        l.forEach((lang,i) => {
-            if (!lang || !v[i]) return;
-            const k = `${p}${lang.trim()}`;
-            if (!data[k]) data[k] = [];
-            data[k].push(`"${v[i]}"`);
+            const pid = pidSource.value.trim();
+            if (!pid) return;
+
+            // 2. Identify the value
+            const dateInput = row.querySelector("input[type='date']");
+            const textInput = row.querySelector("input[type='text']:not(.qual-extra)"); // For References
+            const qualTextInput = row.querySelector("input.qual-extra"); // For Qualifiers
+
+            let value = "";
+            if (dateInput && dateInput.value) {
+                value = fmt(dateInput.value);
+            } else if (qualTextInput && qualTextInput.value) {
+                value = qualTextInput.value.trim();
+            } else if (textInput && textInput.value) {
+                // This captures the Reference value from the <select> + <input> rows
+                value = textInput.value.trim();
+                // If it's a reference to an item, ensure no quotes. 
+                // If it's a string, QuickStatements might need quotes.
+                if (pid === "P146") value = `"${value}"`; 
+            }
+
+            if (value) {
+                // In V1, Qualifiers and References are both appended:
+                // Q123 P123 V123 Pqual Vqual Sref Vref
+                // QuickStatements treats 'S' as a reference prefix in some setups, 
+                // but usually, it's just the Property ID.
+                parts.push(`${pid} ${value}`);
+            }
         });
-    });
 
-    let v1 = "CREATE\n";
-    Object.entries(data).forEach(([k,v]) => {
-        if (Array.isArray(v)) {
-            v.forEach(x => v1 += `LAST\t${k}\t${x}\n`);
-        } else {
-            v1 += `LAST\t${k}\t${v}\n`;
+        return parts.join("  ");
+    };
+
+    /* ===============================
+       Build Claims Data
+    =============================== */
+
+    fields.forEach(field => {
+
+        let value = fd.get(field);
+
+        if (!value) return;
+
+        if (field === "P662") {
+            value = `"${value}"`;
         }
+
+        const qualifiers = buildQualifierParts(field);
+
+        data[field] = qualifiers
+            ? `${value} ${qualifiers}`
+            : value;
     });
 
-    const blob = new Blob([v1], { type: "text/plain" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "monastery_v1.txt";
-    a.click();
-    URL.revokeObjectURL(a.href);
+    /* ===============================
+       Multilingual Fields
+    =============================== */
+
+    ["L","D","A"].forEach(prefix => {
+
+        const langs = fd.getAll(`${prefix}_lang[]`);
+        const vals  = fd.getAll(`${prefix}_value[]`);
+
+        langs.forEach((lang,i) => {
+
+            if (!lang || !vals[i]) return;
+
+            const key = `${prefix}${lang.trim()}`;
+
+            if (!data[key]) data[key] = [];
+
+            data[key].push(`"${vals[i]}"`);
+        });
+
+    });
+
+    /* ===============================
+       Test Mode
+    =============================== */
+
+    const testMode = true;
+    let qid = fd.get("qid");
+
+    if (!qid) {
+        if (testMode) {
+            qid = "TEST_QID_" + Date.now();
+        } else {
+            const res = await fetch("/create-empty-item", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+            });
+            const result = await res.json();
+            if (!result.id) {
+                alert("Failed to create item");
+                return;
+            }
+            qid = result.id;
+        }
+    }
+
+    // THIS SECTION UPDATES THE STORAGE
+    // This automatically "removes" the old one by overwriting it
+    localStorage.setItem("last_monastery_qid", qid); 
+    console.log("Latest QID saved to storage:", qid);
+
+    showStatus(`Success! Entry Added. QID ${qid} is saved and ready for the Complexes Form.`);
+
+    /* ===============================
+       Command Builder
+    =============================== */
+
+    let command = "";
+
+    Object.entries(data).forEach(([k,v]) => {
+
+        if (Array.isArray(v)) {
+            v.forEach(x => {
+                command += `${qid}\t${k}\t${x}\n`;
+            });
+        }
+        else {
+            command += `${qid}\t${k}\t${v}\n`;
+        }
+
+    });
+
+    /* ===============================
+       Output
+    =============================== */
+
+    console.log("========== COMMAND ==========");
+    console.log(command || "EMPTY COMMAND");
+
+    alert("Check console output (Test Mode)");
+
 };
 </script>
 
