@@ -3,7 +3,7 @@ from urllib.parse import quote
 import json
 import os
 
-ids = ['Q16200', 'Q11295', 'Q704192', 'Q141469', 'Q8', 'Q153166']
+ids = ['Q11295', 'Q704192', 'Q141469', 'Q8', 'Q153166'] #Q16200 for P208 will be autofilled
 
 def fetch_items_by_pid(pid, save_path=None):
     endpoint = "https://database.factgrid.de/sparql"

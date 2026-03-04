@@ -20,6 +20,54 @@
     "Hospital Brothers"
   ],
   [
+    "Q1297767",
+    "Ordem da Imaculada Conceição (OIC)"
+  ],
+  [
+    "Q1297768",
+    "Congregação dos Amadeítas"
+  ],
+  [
+    "Q1298152",
+    "Ordem dos Clérigos Regulares Ministros dos Enfermos (MI)"
+  ],
+  [
+    "Q1352534",
+    "Order of the Visitation of Holy Mary"
+  ],
+  [
+    "Q1352535",
+    "Order of Cistercian Nuns of Strict Observance"
+  ],
+  [
+    "Q1352536",
+    "Order of the Humiliates"
+  ],
+  [
+    "Q1352539",
+    "Order of the Humiliates (female)"
+  ],
+  [
+    "Q1352540",
+    "Somaschi Fathers"
+  ],
+  [
+    "Q1352541",
+    "Katharinenschwestern"
+  ],
+  [
+    "Q1352543",
+    "Valliscaulian Order"
+  ],
+  [
+    "Q1352547",
+    "Third Order of Saint Francis"
+  ],
+  [
+    "Q1791668",
+    "Hofgut Gnadenthal / Nehemia-Hof / Jesus-Bruderschaft e.V."
+  ],
+  [
     "Q142146",
     "Congrégation de France"
   ],
@@ -196,10 +244,6 @@
     "Order"
   ],
   [
-    "Q640761",
-    "Ordem dos Carmelitas Descalços"
-  ],
-  [
     "Q997718",
     "Lóios"
   ],
@@ -220,132 +264,8 @@
     "Burgos: Orden de San Miguel y San Bartolomé"
   ],
   [
-    "Q1297767",
-    "Ordem da Imaculada Conceição (OIC)"
-  ],
-  [
-    "Q1297768",
-    "Congregação dos Amadeítas"
-  ],
-  [
-    "Q1298152",
-    "Ordem dos Clérigos Regulares Ministros dos Enfermos (MI)"
-  ],
-  [
-    "Q1352534",
-    "Order of the Visitation of Holy Mary"
-  ],
-  [
-    "Q1352535",
-    "Order of Cistercian Nuns of Strict Observance"
-  ],
-  [
-    "Q1352536",
-    "Order of the Humiliates"
-  ],
-  [
-    "Q1352539",
-    "Order of the Humiliates (female)"
-  ],
-  [
-    "Q1352540",
-    "Somaschi Fathers"
-  ],
-  [
-    "Q1352541",
-    "Katharinenschwestern"
-  ],
-  [
-    "Q1352543",
-    "Valliscaulian Order"
-  ],
-  [
-    "Q1352547",
-    "Third Order of Saint Francis"
-  ],
-  [
-    "Q1791668",
-    "Hofgut Gnadenthal / Nehemia-Hof / Jesus-Bruderschaft e.V."
-  ],
-  [
-    "Q1207228",
-    "Brothers of Mercy"
-  ],
-  [
-    "Q1195845",
-    "Croziers"
-  ],
-  [
-    "Q1195227",
-    "Annunciades of Lombardy"
-  ],
-  [
-    "Q1195228",
-    "Maricollen"
-  ],
-  [
-    "Q1195229",
-    "Wilhelmites"
-  ],
-  [
-    "Q1294759",
-    "Order of Christ"
-  ],
-  [
-    "Q1295052",
-    "Lisboa: Casa do Espírito Santo da Pedreira"
-  ],
-  [
-    "Q1295071",
-    "Congregação dos Cónegos Seculares de São João Evangelista (C.S.J.E)"
-  ],
-  [
-    "Q1295083",
-    "Ordem dos Cónegos Regulares de Santo Antão"
-  ],
-  [
-    "Q1295081",
-    "Herdade chamada As Cortes (quinta - herdade): Ordem de São Paulo Primeiro Eremita da Congregação da Serra de Ossa (OSPPE)"
-  ],
-  [
-    "Q1295334",
-    "Ordem de Santa Eulália de Barcelona"
-  ],
-  [
-    "Q1295911",
-    "Freguesia de Santa Maria Maior (freguesia - paróquia civil): Congregação do Senhor Jesus dos Perdões"
-  ],
-  [
-    "Q1296022",
-    "Congregação do Senhor Jesus da Boa Morte e Caridade"
-  ],
-  [
-    "Q1296191",
-    "Ordem do Senhor Jesus Nazareno da Penitência"
-  ],
-  [
-    "Q1296246",
-    "Congregação dos Padres Marianos da Imaculada Conceição"
-  ],
-  [
-    "Q1296255",
-    "Congregação da Missão da Real Casa de Lisboa"
-  ],
-  [
-    "Q1296253",
-    "Congregação da Missão"
-  ],
-  [
-    "Q1296261",
-    "Estremoz: Congregação do Oratório de Nossa Senhora da Conceição"
-  ],
-  [
-    "Q1296738",
-    "Ordem de Santa Maria de Rocamador"
-  ],
-  [
-    "Q1297062",
-    "Congregação Reformada de Santo Agostinho"
+    "Q640761",
+    "Order of Descalced Carmelites"
   ],
   [
     "Q1061939",
@@ -466,5 +386,85 @@
   [
     "Q1188822",
     "Roncesvales (vale): Ordem dos Cónegos Regulares de Roncesvales"
+  ],
+  [
+    "Q1207228",
+    "Brothers of Mercy"
+  ],
+  [
+    "Q1195845",
+    "Croziers"
+  ],
+  [
+    "Q1195227",
+    "Annunciades of Lombardy"
+  ],
+  [
+    "Q1195228",
+    "Maricollen"
+  ],
+  [
+    "Q1195229",
+    "Wilhelmites"
+  ],
+  [
+    "Q1294759",
+    "Order of Christ"
+  ],
+  [
+    "Q1295052",
+    "Lisboa: Casa do Espírito Santo da Pedreira"
+  ],
+  [
+    "Q1295071",
+    "Congregação dos Cónegos Seculares de São João Evangelista (C.S.J.E)"
+  ],
+  [
+    "Q1295083",
+    "Ordem dos Cónegos Regulares de Santo Antão"
+  ],
+  [
+    "Q1295081",
+    "Herdade chamada As Cortes (quinta - herdade): Ordem de São Paulo Primeiro Eremita da Congregação da Serra de Ossa (OSPPE)"
+  ],
+  [
+    "Q1295334",
+    "Ordem de Santa Eulália de Barcelona"
+  ],
+  [
+    "Q1295911",
+    "Freguesia de Santa Maria Maior (freguesia - paróquia civil): Congregação do Senhor Jesus dos Perdões"
+  ],
+  [
+    "Q1296022",
+    "Congregação do Senhor Jesus da Boa Morte e Caridade"
+  ],
+  [
+    "Q1296191",
+    "Ordem do Senhor Jesus Nazareno da Penitência"
+  ],
+  [
+    "Q1296246",
+    "Congregação dos Padres Marianos da Imaculada Conceição"
+  ],
+  [
+    "Q1296255",
+    "Congregação da Missão da Real Casa de Lisboa"
+  ],
+  [
+    "Q1296253",
+    "Congregação da Missão"
+  ],
+  [
+    "Q1296261",
+    "Estremoz: Congregação do Oratório de Nossa Senhora da Conceição"
+  ],
+  [
+    "Q1296738",
+    "Ordem de Santa Maria de Rocamador"
+  ],
+  [
+    "Q1297062",
+    "Congregação Reformada de Santo Agostinho"
   ]
 ]

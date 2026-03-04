@@ -80,70 +80,6 @@
     "Diocese of Minden"
   ],
   [
-    "Q153244",
-    "Archdiocese of Trier"
-  ],
-  [
-    "Q153249",
-    "Archdiocese of Salzburg"
-  ],
-  [
-    "Q153234",
-    "Diocese of Münster"
-  ],
-  [
-    "Q153235",
-    "Diocese of Naumburg"
-  ],
-  [
-    "Q153238",
-    "Diocese of Passau"
-  ],
-  [
-    "Q153239",
-    "Diocese of Ratzeburg"
-  ],
-  [
-    "Q153236",
-    "Diocese of Osnabrück"
-  ],
-  [
-    "Q153237",
-    "Diocese of Paderborn"
-  ],
-  [
-    "Q153242",
-    "Diocese of Schwerin"
-  ],
-  [
-    "Q153243",
-    "Diocese of Speyer"
-  ],
-  [
-    "Q153240",
-    "Diocese of Regensburg"
-  ],
-  [
-    "Q153241",
-    "Diocese of Schleswig"
-  ],
-  [
-    "Q153246",
-    "Diocese of Worms"
-  ],
-  [
-    "Q153247",
-    "Diocese of Würzburg"
-  ],
-  [
-    "Q153245",
-    "Diocese of Verden"
-  ],
-  [
-    "Q153248",
-    "Diocese of Oldenburg (Holstein)"
-  ],
-  [
     "Q395391",
     "Archdiocese of Messina-Lipari-Santa Lucia del Mela"
   ],
@@ -248,108 +184,68 @@
     "Bisbat de Vic"
   ],
   [
-    "Q907624",
-    "Archdiocese of Siena"
+    "Q153244",
+    "Archdiocese of Trier"
   ],
   [
-    "Q907625",
-    "Diocese of Sora"
+    "Q153249",
+    "Archdiocese of Salzburg"
   ],
   [
-    "Q1093329",
-    "Roman Catholic Diocese of Cadiz y Ceuta"
+    "Q153234",
+    "Diocese of Münster"
   ],
   [
-    "Q995838",
-    "Bispado de Sigüenza"
+    "Q153235",
+    "Diocese of Naumburg"
   ],
   [
-    "Q995836",
-    "Bispado de Segóvia"
+    "Q153238",
+    "Diocese of Passau"
   ],
   [
-    "Q995851",
-    "Bispado de Córdova"
+    "Q153239",
+    "Diocese of Ratzeburg"
   ],
   [
-    "Q995850",
-    "Bispado de Palença"
+    "Q153236",
+    "Diocese of Osnabrück"
   ],
   [
-    "Q995864",
-    "Bispado de Astorga"
+    "Q153237",
+    "Diocese of Paderborn"
   ],
   [
-    "Q995868",
-    "Bispado de Calahorra"
+    "Q153242",
+    "Diocese of Schwerin"
   ],
   [
-    "Q995877",
-    "Bispado de Cuenca"
+    "Q153243",
+    "Diocese of Speyer"
   ],
   [
-    "Q995883",
-    "Bispado de Xaém"
+    "Q153240",
+    "Diocese of Regensburg"
   ],
   [
-    "Q995871",
-    "Diocese of Cartagena"
+    "Q153241",
+    "Diocese of Schleswig"
   ],
   [
-    "Q995913",
-    "Diocese of Guarda"
+    "Q153246",
+    "Diocese of Worms"
   ],
   [
-    "Q995855",
-    "Diocese of Avila"
+    "Q153247",
+    "Diocese of Würzburg"
   ],
   [
-    "Q1750762",
-    "Archdiocese of Besançon"
+    "Q153245",
+    "Diocese of Verden"
   ],
   [
-    "Q1298036",
-    "Bispado de Ceuta"
-  ],
-  [
-    "Q1479393",
-    "Roman Catholic Diocese of Nitra"
-  ],
-  [
-    "Q1479379",
-    "Roman Catholic Diocese of Verona"
-  ],
-  [
-    "Q1480086",
-    "Roman Catholic Diocese of Nicosia"
-  ],
-  [
-    "Q1487746",
-    "Roman Catholic Diocese of Piacenza"
-  ],
-  [
-    "Q1750759",
-    "Diocese of Deventer"
-  ],
-  [
-    "Q1750763",
-    "Diocese of Hofbistum München"
-  ],
-  [
-    "Q1750760",
-    "Diocese of 's-Hertogenbosch"
-  ],
-  [
-    "Q1750761",
-    "Diocese of Middelburg"
-  ],
-  [
-    "Q1750764",
-    "Diocese of St. Pölten"
-  ],
-  [
-    "Q1750765",
-    "Archdiocese of Gnesen"
+    "Q153248",
+    "Diocese of Oldenburg (Holstein)"
   ],
   [
     "Q153263",
@@ -462,6 +358,122 @@
   [
     "Q1750775",
     "Diocese of Ypern"
+  ],
+  [
+    "Q1854946",
+    "Roman Catholic Diocese of Senj-Modruš"
+  ],
+  [
+    "Q1854944",
+    "Bistum Ravenstein"
+  ],
+  [
+    "Q1870391",
+    "Roman Catholic Diocese of Cremona"
+  ],
+  [
+    "Q907624",
+    "Archdiocese of Siena"
+  ],
+  [
+    "Q907625",
+    "Diocese of Sora"
+  ],
+  [
+    "Q1093329",
+    "Roman Catholic Diocese of Cadiz y Ceuta"
+  ],
+  [
+    "Q995838",
+    "Bispado de Sigüenza"
+  ],
+  [
+    "Q995836",
+    "Bispado de Segóvia"
+  ],
+  [
+    "Q995851",
+    "Bispado de Córdova"
+  ],
+  [
+    "Q995850",
+    "Bispado de Palença"
+  ],
+  [
+    "Q995864",
+    "Bispado de Astorga"
+  ],
+  [
+    "Q995868",
+    "Bispado de Calahorra"
+  ],
+  [
+    "Q995877",
+    "Bispado de Cuenca"
+  ],
+  [
+    "Q995883",
+    "Bispado de Xaém"
+  ],
+  [
+    "Q995871",
+    "Diocese of Cartagena"
+  ],
+  [
+    "Q995913",
+    "Diocese of Guarda"
+  ],
+  [
+    "Q995855",
+    "Diocese of Avila"
+  ],
+  [
+    "Q1750762",
+    "Archdiocese of Besançon"
+  ],
+  [
+    "Q1298036",
+    "Bispado de Ceuta"
+  ],
+  [
+    "Q1479393",
+    "Roman Catholic Diocese of Nitra"
+  ],
+  [
+    "Q1479379",
+    "Roman Catholic Diocese of Verona"
+  ],
+  [
+    "Q1480086",
+    "Roman Catholic Diocese of Nicosia"
+  ],
+  [
+    "Q1487746",
+    "Roman Catholic Diocese of Piacenza"
+  ],
+  [
+    "Q1750759",
+    "Diocese of Deventer"
+  ],
+  [
+    "Q1750763",
+    "Diocese of Hofbistum München"
+  ],
+  [
+    "Q1750760",
+    "Diocese of 's-Hertogenbosch"
+  ],
+  [
+    "Q1750761",
+    "Diocese of Middelburg"
+  ],
+  [
+    "Q1750764",
+    "Diocese of St. Pölten"
+  ],
+  [
+    "Q1750765",
+    "Archdiocese of Gnesen"
   ],
   [
     "Q153273",

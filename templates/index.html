@@ -126,7 +126,7 @@ form {
         <label>Label:</label>
         <input name="L_lang[]" placeholder="Language code (e.g. en, de)">
         <input name="L_value[]" placeholder="Label value">
-        <button type="button" onclick="addLangField('labels-container', 'Len')">Add</button>
+        <button type="button" onclick="addLangField('labels-container', 'L')">Add</button>
     </div>
     <div id="labels-container"></div>
 
@@ -134,7 +134,7 @@ form {
         <label>Description:</label>
         <input name="D_lang[]" placeholder="Language code (e.g. en, de)">
         <input name="D_value[]" placeholder="Label value">
-        <button type="button" onclick="addLangField('descriptions-container', 'Den')">Add</button>
+        <button type="button" onclick="addLangField('descriptions-container', 'D')">Add</button>
     </div>
     <div id="descriptions-container"></div>
 
@@ -142,7 +142,7 @@ form {
         <label>Also known as / Aliases:</label>
         <input name="A_lang[]" placeholder="Language code (e.g. en, de)">
         <input name="A_value[]" placeholder="Label value">
-        <button type="button" onclick="addLangField('aliases-container', 'Aen')">Add</button>
+        <button type="button" onclick="addLangField('aliases-container', 'A')">Add</button>
     </div>
     <div id="aliases-container"></div>
 
@@ -231,7 +231,7 @@ form {
 <script>
 // Map input names to their JSON files
 const autocompleteFiles = {
-  "P208": "static/data/Q16200.json",
+  /*"P208": "static/data/Q16200.json",*/
   "P131": "static/data/Q11295.json",
   "P2": "static/data/Q704192.json",
   "P746": "static/data/Q141469.json"
@@ -317,7 +317,7 @@ function attachLocalAutocomplete(input, fieldName) {
 }
 
 // Apply to your inputs
-document.querySelectorAll('input[name="P131"], input[name="P2"], input[name="P746"], input[name="P208"]')
+document.querySelectorAll('input[name="P131"], input[name="P2"], input[name="P746"]') /*', input[name="P208"]')*/
     .forEach(input => {
         const fieldName = input.getAttribute("name");
         attachLocalAutocomplete(input, fieldName);
@@ -578,44 +578,32 @@ const buildQualifierParts = (field) => {
     return parts.join("  ");
 };
 
+
 document.getElementById("monasteriesForm").onsubmit = async e => {
     e.preventDefault();
 
     const fd = new FormData(e.target);
-    const data = {};
     const fields = ["P131", "P2", "P746", "P662", "P208", "P471", "P76"];
-    const testMode = true; // Set to false for production
-
-    // 1. REUSE PENDING QID IF IT EXISTS (Avoids Junk creation)
+    
+    // 1. REUSE OR GENERATE QID
     let qid = localStorage.getItem("pending_monastery_qid");
 
     try {
-        // 2. GENERATE NEW QID ONLY IF NO PENDING ONE EXISTS
         if (!qid) {
-            if (testMode) {
-                qid = "TEST_QID_" + Date.now();
-            } else {
-                const res = await fetch("/create-empty-item", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" }
-                });
-                
-                if (!res.ok) throw new Error("Failed to reach server to create QID.");
-                const result = await res.json();
-                if (!result.id) throw new Error("API failed to return a valid QID.");
-                
-                qid = result.id;
-            }
-            // Save immediately to prevent "losing" the ID if the next steps fail
+            const res = await fetch("/create-empty-item", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+            });
+            if (!res.ok) throw new Error("Failed to reach server to create QID.");
+            const result = await res.json();
+            qid = result.id;
             localStorage.setItem("pending_monastery_qid", qid);
-            console.log("QID generated and locked for use:", qid);
-        } else {
-            console.log("Re-using existing pending QID:", qid);
         }
 
         /* ===============================
-           3. Build Command Data
+            2. Build Monastery V1 Command
         =============================== */
+        const data = {};
         fields.forEach(field => {
             let value = fd.get(field);
             if (!value) return;
@@ -644,41 +632,137 @@ document.getElementById("monasteriesForm").onsubmit = async e => {
             }
         });
 
-        if (!command) throw new Error("No data provided to execute.");
+        if (!command) throw new Error("No data provided.");
 
         /* ===============================
-           4. DATA EXECUTION PHASE
+            3. PASS TO COMPLEX FORM
         =============================== */
-        // Simulate or perform your actual data submission here
-        console.log("Executing data for QID:", qid);
+        // We store the V1 command string in localStorage
+        localStorage.setItem("pending_monastery_v1", command);
         
-        // --- If using an API to save data, uncomment below ---
-        // const saveRes = await fetch("/save-data", { method: "POST", body: JSON.stringify({ command }) });
-        // if (!saveRes.ok) throw new Error("Data submission failed.");
-
-        /* ===============================
-           5. SUCCESS COMMIT
-        =============================== */
-        // We only reach this if EVERYTHING succeeded.
-        
-        // Mark as the final QID for the Complexes Form button
+        // Also update the 'last' QID for the navigation button
         localStorage.setItem("last_monastery_qid", qid);
-        
-        // Clear the pending status since this item is now "finished"
-        localStorage.removeItem("pending_monastery_qid");
 
-        console.log("========== SUCCESS ==========");
-        console.log("Final Command:\n", command);
+        /* COMMENTED OUT DATA SUBMISSION
+           ----------------------------------
+           const saveRes = await fetch("/save-data", { ... });
+        */
 
-        showStatus(`Success! Data attached to ${qid}. It is now linked for the Complexes Form.`);
+        console.log("Monastery V1 Command Prepared and Saved:", command);
+        showStatus(`Success! Monastery data for ${qid} is ready. Please click 'Complexes Form' to proceed.`);
 
     } catch (err) {
-        // ON FAILURE: qid stays in 'pending_monastery_qid'. 
-        // The user can fix inputs and click again without wasting a new QID.
         console.error("Critical Failure:", err.message);
-        showStatus(`Error: ${err.message}. Retaining QID ${qid} for retry.`, true);
+        showStatus(`Error: ${err.message}`, true);
     }
 };
+
+
+// document.getElementById("monasteriesForm").onsubmit = async e => {
+//     e.preventDefault();
+
+//     const fd = new FormData(e.target);
+//     const data = {};
+//     const fields = ["P131", "P2", "P746", "P662", "P208", "P471", "P76"];
+//     const testMode = false; // Set to false for production
+
+//     // 1. REUSE PENDING QID IF IT EXISTS (Avoids Junk creation)
+//     let qid = localStorage.getItem("pending_monastery_qid");
+
+//     try {
+//         // 2. GENERATE NEW QID ONLY IF NO PENDING ONE EXISTS
+//         if (!qid) {
+//             if (testMode) {
+//                 qid = "TEST_QID_" + Date.now();
+//             } else {
+//                 const res = await fetch("/create-empty-item", {
+//                     method: "POST",
+//                     headers: { "Content-Type": "application/json" }
+//                 });
+                
+//                 if (!res.ok) throw new Error("Failed to reach server to create QID.");
+//                 const result = await res.json();
+//                 if (!result.id) throw new Error("API failed to return a valid QID.");
+                
+//                 qid = result.id;
+//             }
+//             // Save immediately to prevent "losing" the ID if the next steps fail
+//             localStorage.setItem("pending_monastery_qid", qid);
+//             console.log("QID generated and locked for use:", qid);
+//         } else {
+//             console.log("Re-using existing pending QID:", qid);
+//         }
+
+//         /* ===============================
+//            3. Build Command Data
+//         =============================== */
+//         fields.forEach(field => {
+//             let value = fd.get(field);
+//             if (!value) return;
+//             if (field === "P662") value = `"${value}"`;
+//             const qualifiers = buildQualifierParts(field);
+//             data[field] = qualifiers ? `${value} ${qualifiers}` : value;
+//         });
+
+//         ["L", "D", "A"].forEach(prefix => {
+//             const langs = fd.getAll(`${prefix}_lang[]`);
+//             const vals = fd.getAll(`${prefix}_value[]`);
+//             langs.forEach((lang, i) => {
+//                 if (!lang || !vals[i]) return;
+//                 const key = `${prefix}${lang.trim()}`;
+//                 if (!data[key]) data[key] = [];
+//                 data[key].push(`"${vals[i]}"`);
+//             });
+//         });
+
+//         let command = "";
+//         Object.entries(data).forEach(([k, v]) => {
+//             if (Array.isArray(v)) {
+//                 v.forEach(x => { command += `${qid}\t${k}\t${x}\n`; });
+//             } else {
+//                 command += `${qid}\t${k}\t${v}\n`;
+//             }
+//         });
+
+//         if (!command) throw new Error("No data provided to execute.");
+
+//         /* ===============================
+//            4. DATA EXECUTION PHASE
+//         =============================== */
+//         // Simulate or perform your actual data submission here
+//         console.log("Executing data for QID:", qid);
+        
+//         // --- If using an API to save data, uncomment below ---
+//         const saveRes = await fetch("/save-data", { 
+//             method: "POST", 
+//             headers: { "Content-Type": "application/json" },
+//             body: JSON.stringify({ command }) 
+//         });
+//         if (!saveRes.ok) throw new Error("Data submission failed.");
+
+//         /* ===============================
+//            5. SUCCESS COMMIT
+//         =============================== */
+//         // We only reach this if EVERYTHING succeeded.
+        
+//         // Mark as the final QID for the Complexes Form button
+//         localStorage.setItem("last_monastery_qid", qid);
+        
+//         // Clear the pending status since this item is now "finished"
+//         localStorage.removeItem("pending_monastery_qid");
+
+//         console.log("========== SUCCESS ==========");
+//         console.log("Final Command:\n", command);
+
+//         showStatus(`Success! Data attached to ${qid}. It is now linked for the Complexes Form.`);
+
+//     } catch (err) {
+//         // ON FAILURE: qid stays in 'pending_monastery_qid'. 
+//         // The user can fix inputs and click again without wasting a new QID.
+//         console.error("Critical Failure:", err.message);
+//         showStatus(`Error: ${err.message}. Retaining QID ${qid} for retry.`, true);
+//     }
+// };
 
 </script>
 
