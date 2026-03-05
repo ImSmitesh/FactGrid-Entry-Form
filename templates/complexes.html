@@ -19,12 +19,6 @@ h2 {
   color: #ffffff;
 }
 
-
-.form-container {
-  display: flex;
-  justify-content: center; /* horizontally center the form */
-}
-
 form {
   padding: 30px;
   border-radius: 8px;
@@ -152,12 +146,12 @@ form {
         <input name="P83" autocomplete="off">
     </div>
 
-    <div class="form-row">
+    <!-- <div class="form-row">
         <label>P131 - Research projects:</label>
         <input name="P131" autocomplete="off">
         <button type="button" onclick="addField('P131_subfields', 'Reference')">Add Reference</button>
     </div>
-    <div class="subfields" id="P131_subfields"></div>
+    <div class="subfields" id="P131_subfields"></div> -->
 
     <div class="form-row">
         <label>P1003 - Diocese:</label>
@@ -212,7 +206,7 @@ Add Entry</button> -->
 const autocompleteFiles = {
   "P83": "static/data/Q8.json",
   "P1003": "static/data/Q153166.json",
-  "P131": "static/data/Q11295.json",
+  /*"P131": "static/data/Q11295.json",*/
 };
 
 // Store loaded JSONs
@@ -280,7 +274,7 @@ function attachLocalAutocomplete(input, fieldName) {
 }
 
 // Apply to your inputs
-document.querySelectorAll('input[name="P131"], input[name="P83"], input[name="P1003"]')
+document.querySelectorAll('input[name="P83"], input[name="P1003"]')/*input[name="P131"]*/
     .forEach(input => {
         const fieldName = input.getAttribute("name");
         attachLocalAutocomplete(input, fieldName);
@@ -312,39 +306,8 @@ function addField(containerId, type) {
   container.appendChild(div);
 }
 
-function collectFormData(form) {
-  const fd = new FormData(form);
-  const data = {};
-  for (const [k, v] of fd.entries()) {
-    if (k.endsWith("[]")) {
-      const key = k.replace("[]", "");
-      if (!data[key]) data[key] = [];
-      data[key].push(v);
-    } else {
-      data[k] = v;
-    }
-  }
-  return data;
-}
-
 // Variable to hold the QID throughout the session
 let monasteryQid = null;
-
-document.addEventListener("DOMContentLoaded", () => {
-    // 1. Extract the QID from the URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const passedQid = urlParams.get('monastery_qid');
-
-    // 2. Assign to variable and print to console
-    if (passedQid) {
-        monasteryQid = passedQid;
-        
-        console.log("%c >>> MONASTERY QID RECEIVED <<< ", "background: #28a745; color: #fff; font-weight: bold;");
-        console.log("Variable 'monasteryQid' is now set to:", monasteryQid);
-    } else {
-        console.log("Notice: No Monastery QID was passed to this form.");
-    }
-});
 
 function downloadBatch(content, filename) {
     const blob = new Blob([content], { type: 'text/plain' });
@@ -358,205 +321,132 @@ function downloadBatch(content, filename) {
     document.body.removeChild(a);
 }
 
+const PID_TYPES = {
+TIME: ["P1079", "P49", "P571", "P580", "P1124", "P1126", "P39", "P1060", "P779", "P106", "P585", "P41", "P43", "P1319", "P96", "P1326", "P1371", "P37", "P1636", "P77", "P569", "P40", "P4602", "P182", "P321", "P38", "P570", "P303", "P575", "P394", "P432", "P813", "P412", "P214", "P551", "P222", "P577", "P44", "P459", "P50", "P576", "P582", "P1123", "P1125", "P46", "P290", "P1249", "P289", "P291", "P2032", "P612", "P818", "P45"],
+STRING: ["P112", "P88", "P787", "P788", "P509", "P146", "P471", "P76"],
+ITEM: ["P506", "P854", "P510", "P853", "P2348", "P785", "P467", "P786"]
+};
+
+// Function used inside your submission loop
+function formatValueByPid(pid, val) {
+    if (!val) return "";
+    val = val.trim();
+
+    if (PID_TYPES.TIME.includes(pid)) {
+        // Extract the year from the YYYY-MM-DD string
+        const yearMatch = val.match(/^(\d{4})/);
+        const year = yearMatch ? parseInt(yearMatch[1]) : null;
+
+        // Base format: +YYYY-MM-DDT00:00:00Z/11
+        let formattedDate = `+${val}T00:00:00Z/11`;
+
+        // If the year is 1582 or earlier, append /J for Julian Calendar
+        if (year !== null && year <= 1582) {
+            formattedDate += "/J";
+        }
+
+        return formattedDate;
+    } 
+    else if (PID_TYPES.STRING.includes(pid)) {
+        return `"${val}"`;
+    } 
+    else {
+        // Items (QIDs)
+        return val;
+    }
+}
+
 document.getElementById("complexesForm").onsubmit = async e => {
     e.preventDefault();
     const fd = new FormData(e.target);
 
-    let qid_of_complex = localStorage.getItem("pending_complex_qid");
+    let qid_of_complex = "";
 
     try {
-        // 1. Generate Complex QID (Required for linking)
-        if (!qid_of_complex) {
-            const res = await fetch("/create-empty-item", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" }
-            });
-            const result = await res.json();
-            if (!result.id) throw new Error("Could not generate QID.");
-            qid_of_complex = result.id;
-            localStorage.setItem("pending_complex_qid", qid_of_complex);
-        }
+        // // 1. ALWAYS Generate a fresh Complex QID via API
+        // const res = await fetch("/create-empty-item", {
+        //     method: "POST",
+        //     headers: { "Content-Type": "application/json" }
+        // });
+        
+        // if (!res.ok) throw new Error("Failed to reach server to create Complex QID.");
+        // const result = await res.json();
+        
+        // if (!result.id) throw new Error("API failed to return a valid QID for the Complex.");
+        // qid_of_complex = result.id;
+        qid_of_complex = 2
 
         // 2. Build Complex V1 Section
         let complexV1 = "";
-        const properties = ["P2_complex", "P48_complex", "P83", "P131", "P1003", "P1095", "P76", "P471"];
+        const properties = ["P2_complex", "P48_complex", "P83", "P1003", "P1095", "P76", "P471"]; /*"P131"*/
+        
         properties.forEach(prop => {
-            let val = "";
+            const cleanProp = prop.replace("_complex", "");
+            let val;
 
-            // 1. Check if we are handling the coordinate property
             if (prop === "P48_complex") {
                 const lat = document.getElementById("lat_input").value.trim();
                 const long = document.getElementById("long_input").value.trim();
-                
-                // Build the FactGrid coordinate format: @Lat/Long
-                if (lat && long) {
-                    val = `@${lat}/${long}`;
-                }
+                val = (lat && long) ? `@${lat}/${long}` : null;
             } else {
-                // 2. Otherwise, get value from FormData as usual
-                val = fd.get(prop);
+                // Formatter handles P471/P76 quotes and Date logic
+                val = formatValueByPid(cleanProp, fd.get(prop));
             }
 
-            // Skip if no value was found for this property
             if (!val) return;
 
-            // 3. Keep your exact tab-separated formatting
-            const cleanProp = prop.replace("_complex", "");
             let line = `${qid_of_complex}\t${cleanProp}\t${val}`;
-            
-            // 4. Handle subfields (Qualifiers/References) exactly as before
-            const pidArr = fd.getAll(prop + "_subfields_pid[]");
-            const refArr = fd.getAll(prop + "_subfields_ref[]");
-            
+
+            // Handle Qualifiers and References (Subfields)
+            const subContainerId = prop + "_subfields";
+            const pidArr = fd.getAll(`${subContainerId}_pid[]`);
+            const refArr = fd.getAll(`${subContainerId}_ref[]`);
+
             pidArr.forEach((pid, i) => {
-                if (refArr[i]) {
-                    // Converts P to S for references in V1 format
-                    line += `\t${pid.replace("P", "S")}\t${refArr[i]}`;
+                let rawRefValue = refArr[i];
+                if (rawRefValue) {
+                    let formattedRefValue = formatValueByPid(pid, rawRefValue);
+                    line += `\t${pid}\t${formattedRefValue}`;
                 }
             });
 
             complexV1 += line + "\n";
         });
 
-        // 3. Retrieve Monastery V1 from previous form
+        // 3. Retrieve Monastery V1 and QID from previous form
         const monasteryV1 = localStorage.getItem("pending_monastery_v1") || "";
+        const monasteryQid = localStorage.getItem("last_monastery_qid");
         
         // 4. Create the Inter-Links
         let links = "";
         if (monasteryQid && qid_of_complex) {
             // Monastery points to Complex (P208)
             links += `${monasteryQid}\tP208\t${qid_of_complex}\n`;
-            // Complex points to Monastery (P1003)
-            links += `${qid_of_complex}\tP1003\t${monasteryQid}\n`;
+            // Complex points back to Monastery (P131)
+            links += `${qid_of_complex}\tP131\t${monasteryQid}\n`;
         }
 
         // 5. Combine everything
-        const finalBatch = "### MONASTERY DATA ###\n" + monasteryV1 + 
-                           "\n### COMPLEX DATA ###\n" + complexV1 + 
-                           "\n### LINKING LINES ###\n" + links;
+        const finalBatch = monasteryV1 + 
+                           "\n" + complexV1 + 
+                           "\n" + links;
 
         // 6. Trigger Download
-        const fileName = `factgrid_batch_${monasteryQid || 'new'}.txt`;
+        const fileName = `factgrid_batch_${monasteryQid || 'item'}.txt`;
         downloadBatch(finalBatch, fileName);
 
-        // 7. Cleanup
-        // Since we downloaded it, we can clear the memory for the next entry
+        // 7. Cleanup Memory
         localStorage.removeItem("pending_complex_qid");
         localStorage.removeItem("pending_monastery_qid");
         localStorage.removeItem("pending_monastery_v1");
+        localStorage.removeItem("last_monastery_qid");
 
-        alert("Batch file downloaded! You can now paste this into FactGrid QuickStatements.");
+        alert(`Batch file generated with fresh IDs: Monastery (${monasteryQid}) and Complex (${qid_of_complex})!`);
 
     } catch (err) {
         alert("Error: " + err.message);
     }
 };
-
-// document.getElementById("complexesForm").onsubmit = async e => {
-//     e.preventDefault();
-//     const form = e.target;
-//     const fd = new FormData(form);
-
-//     /* ===============================
-//        1. Setup & Persistent QID Check
-//     =============================== */
-//     const testMode = false; 
-//     // Check if we have a QID from a previously failed attempt on this page
-//     let qid_of_complex = localStorage.getItem("pending_complex_qid");
-
-//     try {
-//         // 2. GENERATE NEW ONLY IF NO PENDING QID EXISTS
-//         if (!qid_of_complex) {
-//             if (testMode) {
-//                 qid_of_complex = "TEST_COMPLEX_" + Date.now();
-//             } else {
-//                 const res = await fetch("/create-empty-item", {
-//                     method: "POST",
-//                     headers: { "Content-Type": "application/json" }
-//                 });
-
-//                 if (!res.ok) throw new Error("Server failed to create complex item.");
-
-//                 const result = await res.json();
-//                 if (!result.id) throw new Error("API returned no QID for complex.");
-                
-//                 qid_of_complex = result.id;
-//             }
-//             // Store it immediately to prevent junk creation if data build fails
-//             localStorage.setItem("pending_complex_qid", qid_of_complex);
-//             console.log("New Complex QID generated and locked:", qid_of_complex);
-//         } else {
-//             console.log("Re-using pending Complex QID:", qid_of_complex);
-//         }
-
-//         /* ===============================
-//            3. Command Builder (V1 Format)
-//         =============================== */
-//         let v1 = "";
-//         const properties = ["P2_complex", "P48_complex", "P83", "P131", "P1003", "P1095", "P76", "P471"];
-
-//         properties.forEach(prop => {
-//             const val = fd.get(prop);
-//             if (!val) return;
-
-//             const cleanProp = prop.replace("_complex", "");
-//             let line = `${qid_of_complex}\t${cleanProp}\t${val}`;
-
-//             const pidArr = fd.getAll(prop + "_subfields_pid[]");
-//             const refArr = fd.getAll(prop + "_subfields_ref[]");
-//             pidArr.forEach((pid, i) => {
-//                 if (refArr[i]) {
-//                     const s_pid = pid.replace("P", "S");
-//                     line += `\t${s_pid}\t${refArr[i]}`;
-//                 }
-//             });
-
-//             v1 += line + "\n";
-//         });
-
-//         /* ===============================
-//            4. TWO-WAY LINKS
-//         =============================== */
-//         if (monasteryQid) {
-//             v1 += `${monasteryQid}\tP208\t${qid_of_complex}\n`;
-//             v1 += `${qid_of_complex}\tP1003\t${monasteryQid}\n`;
-//         } else {
-//             // Optional: prevent submission if the monastery link is required
-//             // throw new Error("Missing Monastery QID. Link cannot be established.");
-//         }
-
-//         /* ===============================
-//            5. FINAL EXECUTION COMMIT
-//         =============================== */
-//         // Simulate or perform API data submission
-//         console.log("%c >>> FINAL V1 COMMAND GENERATED <<< ", "background: #007bff; color: #fff; font-weight: bold;");
-//         console.log(v1);
-
-//         // --- If using API to save data ---
-//         const saveRes = await fetch("/save-complex-data", { 
-//             method: "POST", 
-//             headers: { "Content-Type": "application/json" },
-//             body: JSON.stringify({ v1 }) 
-//         });
-//         if (!saveRes.ok) throw new Error("Data submission failed.");
-
-//         // If we reach here, everything is successful.
-//         // Clear the pending QID so the next NEW complex gets a new ID.
-//         localStorage.removeItem("pending_complex_qid");
-        
-//         // Also clear the monasteryQid from storage if this was a one-to-one relationship
-//         // localStorage.removeItem("last_monastery_qid");
-
-//         alert(`Success! Complex ${qid_of_complex} created and linked.`);
-
-//     } catch (err) {
-//         // If it fails, the qid_of_complex remains in 'pending_complex_qid'
-//         // Next click uses the SAME ID.
-//         console.error("Complex Execution Failed:", err.message);
-//         alert(`Error: ${err.message}. QID ${qid_of_complex} retained for retry.`);
-//     }
-// };
-
 </script>
 
 </body>

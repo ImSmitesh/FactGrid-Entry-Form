@@ -113,13 +113,13 @@ form {
     margin-top: 5px;
     gap: 5px;
 }
+
 </style>
 </head>
 
 <body>
 
 <h2>Monasteries Data Entry Form</h2>
-<input type="hidden" name="qid" id="qidField">
 <form id="monasteriesForm">
 
     <div class="form-row">
@@ -156,13 +156,13 @@ form {
         <input name="P131" autocomplete="off">
     </div>
 
-    <div class="form-row">
+    <!-- <div class="form-row">
         <label>P208 – Address / Real estate:</label>
         <input name="P208" autocomplete="off">
         <button type="button" onclick="addField('P208_subfields', 'Qualifier')">Add Qualifier</button>
         <button type="button" onclick="addField('P208_subfields', 'Reference')">Add Reference</button>
     </div>
-    <div class="subfields" id="P208_subfields"></div>
+    <div class="subfields" id="P208_subfields"></div> -->
 
     <div class="form-row">
         <label>P662 – Dedicatee:</label>
@@ -216,9 +216,7 @@ form {
         white-space: nowrap;
         float: right;
     ">
-    Complexes Form
-    </button>
-
+    Complexes Form</button>
 
 </form>
 
@@ -300,6 +298,27 @@ function attachLocalAutocomplete(input, fieldName) {
             dropdown.appendChild(opt);
         });
 
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                // If the dropdown is visible, we pick the first item
+                if (dropdown.style.display === "block") {
+                    const firstResult = dropdown.querySelector('div');
+                    if (firstResult) {
+                        e.preventDefault(); // Stop the form from submitting
+                        firstResult.click(); // This triggers your existing opt.onclick logic
+                    }
+                } else {
+                    // Dropdown is closed, move cursor to the next field instead of submitting
+                    const form = input.form;
+                    const index = Array.prototype.indexOf.call(form, input);
+                    if (form.elements[index + 1]) {
+                        e.preventDefault();
+                        form.elements[index + 1].focus();
+                    }
+                }
+            }
+        });
+
         if (results.length) {
             const rect = input.getBoundingClientRect();
             dropdown.style.top = rect.bottom + window.scrollY + "px";
@@ -323,44 +342,34 @@ document.querySelectorAll('input[name="P131"], input[name="P2"], input[name="P74
         attachLocalAutocomplete(input, fieldName);
     });
 
-
-const btn = document.getElementById('runScriptBtn');
-const msg = document.getElementById('fetchMessage');
-
-btn.addEventListener('click', () => {
-    msg.textContent = "Fetching data... please wait ⏳";
-    btn.disabled = true; // prevent multiple clicks
-
-    fetch('/run-fetch-script')
-      .then(response => response.json())
-      .then(data => {
-          if (data.error) {
-              msg.textContent = "Error: " + data.error;
-              console.error(data.stderr);
-          } else {
-              msg.textContent = "Done ✅";
-              console.log(data.stdout);
-          }
-      })
-      .catch(err => {
-          msg.textContent = "An error occurred.";
-          console.error(err);
-      })
-      .finally(() => {
-          btn.disabled = false;
-      });
-});
-
 document.getElementById("runScriptBtn").addEventListener("click", async () => {
+    const btn = document.getElementById("runScriptBtn");
+    const msg = document.getElementById("fetchMessage");
+
+    // 1. Immediately provide feedback
+    msg.textContent = "Fetching data... please wait ⏳";
+    btn.disabled = true; 
+    btn.style.opacity = "0.5"; // Visual cue that it's disabled
+
     try {
         const res = await fetch("/run-fetch-script");
         const data = await res.json();
-        console.log("Script stdout:", data.stdout);
-        console.log("Script stderr:", data.stderr);
-        alert("Script finished! Check console for output.");
+        
+        if (data.error) {
+            msg.textContent = "Error: " + data.error;
+            console.error("Script Error:", data.stderr);
+        } else {
+            msg.textContent = "Done ✅ Data updated.";
+            console.log("Script Output:", data.stdout);
+        }
     } catch (err) {
-        console.error(err);
-        alert("Error running script.");
+        // This catches network errors (e.g., server is down)
+        console.error("Connection Error:", err);
+        msg.textContent = "Connection error. Is the server running?";
+    } finally {
+        // 2. Always re-enable the button so the user can try again later
+        btn.disabled = false;
+        btn.style.opacity = "1";
     }
 });
 
@@ -377,39 +386,46 @@ fetch('/static/data/dates.json')
   })
   .catch(err => console.error(err));
 
+const PID_TYPES = {
+TIME: ["P1079", "P49", "P571", "P580", "P1124", "P1126", "P39", "P1060", "P779", "P106", "P585", "P41", "P43", "P1319", "P96", "P1326", "P1371", "P37", "P1636", "P77", "P569", "P40", "P4602", "P182", "P321", "P38", "P570", "P303", "P575", "P394", "P432", "P813", "P412", "P214", "P551", "P222", "P577", "P44", "P459", "P50", "P576", "P582", "P1123", "P1125", "P46", "P290", "P1249", "P289", "P291", "P2032", "P612", "P818", "P45"],
+STRING: ["P112", "P88", "P787", "P788", "P509", "P471", 'P146', 'P76'],
+ITEM: ["P506", "P854", "P510", "P853", "P2348", "P785", "P467", "P786"]
+};
+
+function limitDigits(el, max) {
+    if (el.value.length > max) {
+        el.value = el.value.slice(0, max);
+    }
+}
+
 function createQualifierInput(rowDiv, containerId, pid) {
+    // Clear previous inputs in this row
+    rowDiv.querySelectorAll(".qual-extra").forEach(el => el.remove());
 
-    // Remove old qualifier boxes first
-    rowDiv.querySelectorAll(".qual-extra").forEach(el => {
-        if (!el.classList.contains("delete-btn")) {
-            el.remove();
-        }
-    });
+    let inputHtml = "";
 
-    let html = "";
-
-    // If PID is P49 or P50 → date box
-    if (pid === "P49" || pid === "P50") {
-
-        html = `
-        <div class="qual-extra" style="display:flex; align-items:center; gap:6px; margin-left:10px;">
-            Enter Date:
-            <input type="date" name="${containerId}_begin[]" class="qual-input">
-        </div>
-        `;
-
-    } else {
-
-        html = `
-        <input type="text"
-               name="${containerId}_ref[]"
-               placeholder="Qualifier value"
-               class="qual-extra qual-input"
-               style="width:200px;">
-        `;
+    if (PID_TYPES.TIME.includes(pid)) {
+    // Year (4 digits), Month (1-12), Day (1-31)
+        inputHtml = `
+            <div class="qual-extra date-group" style="display: inline-flex; gap: 4px; align-items: center;">
+                <input type="number" class="qual-input year-in" placeholder="YYYY" 
+                    oninput="limitDigits(this, 4)" style="width: 60px;">
+                <input type="number" class="qual-input month-in" placeholder="MM" min="0" max="12"
+                    oninput="limitDigits(this, 2, 12)" style="width: 40px;">
+                <input type="number" class="qual-input day-in" placeholder="DD" min="0" max="31"
+                    oninput="limitDigits(this, 2, 31)" style="width: 40px;">
+            </div>`;
+    }
+    else if (PID_TYPES.STRING.includes(pid)) {
+        // STRING -> Standard Text with Quotes
+        inputHtml = `<input type="text" name="${containerId}_ref[]" placeholder="Literal string..." class="qual-extra qual-input" style="width:200px;">`;
+    } 
+    else {
+        // ITEM or DEFAULT -> Autocomplete text box
+        inputHtml = `<input type="text" name="${containerId}_ref[]" placeholder="Search QID..." class="qual-extra qual-input" style="width:200px;">`;
     }
 
-    rowDiv.insertAdjacentHTML("beforeend", html);
+    rowDiv.insertAdjacentHTML("beforeend", inputHtml);
 }
 
 function addField(containerId, type) {
@@ -543,34 +559,52 @@ const buildQualifierParts = (field) => {
     const rows = document.querySelectorAll(`#${sub} .dynamic-row`);
     const parts = [];
 
-    const fmt = d => d ? `+${d}T00:00:00Z/11` : "";
-
     rows.forEach(row => {
-        // Find the PID source (input for Qualifiers, select for References)
         const pidSource = row.querySelector(`input[name="${sub}_pid[]"], select[name="${sub}_pid[]"]`);
         if (!pidSource) return;
 
         const pid = pidSource.value.trim();
         if (!pid) return;
 
-        // Identify the value type
-        const dateInput = row.querySelector("input[type='date']");
-        const textInput = row.querySelector("input[type='text']:not(.qual-extra)"); // References
-        const qualTextInput = row.querySelector("input.qual-extra"); // Qualifiers
-
         let value = "";
-        if (dateInput && dateInput.value) {
-            value = fmt(dateInput.value);
-        } else if (qualTextInput && qualTextInput.value) {
-            value = qualTextInput.value.trim();
-        } else if (textInput && textInput.value) {
-            value = textInput.value.trim();
-            if (pid === "P146") value = `"${value}"`; 
+
+        // 1. Check for the Split Date Inputs
+        const yIn = row.querySelector(".year-in");
+        const mIn = row.querySelector(".month-in");
+        const dIn = row.querySelector(".day-in");
+
+        if (yIn && yIn.value.trim() !== "") {
+            const yearVal = yIn.value.trim().padStart(4, '0');
+            const monthVal = (mIn.value.trim() || "00").padStart(2, '0');
+            const dayVal = (dIn.value.trim() || "00").padStart(2, '0');
+
+            // Determine Precision: /9 for Year only, /11 for Full Day
+            const precision = (monthVal === "00" && dayVal === "00") ? "9" : "11";
+            
+            // Build the core FactGrid Time literal
+            value = `+${yearVal}-${monthVal}-${dayVal}T00:00:00Z/${precision}`;
+
+            // Add Julian /J if year is 1582 or earlier
+            if (parseInt(yearVal) <= 1582) {
+                value += "/J";
+            }
+        } 
+        // 2. Handle Text/QID inputs (Identifiers or Items)
+        else {
+            const input = row.querySelector("input.qual-extra") || row.querySelector("input[type='text']");
+            if (input && input.value.trim() !== "") {
+                const rawVal = input.value.trim();
+                
+                // Add Quotes for Strings like P471, P146, P76
+                if (PID_TYPES.STRING.includes(pid)) {
+                    value = `"${rawVal}"`;
+                } else {
+                    value = rawVal;
+                }
+            }
         }
 
         if (value) {
-            // If it's a reference (from a select), some V1 formats use 'S' prefix
-            // If you just want standard V1, keep it as 'pid'
             parts.push(`${pid} ${value}`);
         }
     });
@@ -578,38 +612,77 @@ const buildQualifierParts = (field) => {
     return parts.join("  ");
 };
 
+function formatValueByPid(pid, val) {
+    if (!val) return "";
+    val = val.trim();
+
+    // 1. HANDLE DATES (Time)
+    if (PID_TYPES.TIME.includes(pid)) {
+        // Expected val: YYYY-MM-DD
+        const yearMatch = val.match(/^(\d{4})/);
+        const year = yearMatch ? parseInt(yearMatch[1]) : null;
+        
+        // Check for "00" placeholders to set precision
+        const precision = (val.includes("-00-00")) ? "9" : "11";
+        let formattedDate = `+${val}T00:00:00Z/${precision}`;
+
+        // Apply Julian flag for FactGrid historical dates
+        if (year !== null && year <= 1582) {
+            formattedDate += "/J";
+        }
+        return formattedDate;
+    } 
+    
+    // 2. HANDLE STRINGS & EXTERNAL IDs (Quotes needed)
+    else if (PID_TYPES.STRING.includes(pid)) {
+        return `"${val}"`;
+    }
+
+    // 3. HANDLE ITEMS (QIDs) - No quotes
+    return val;
+}
+
+document.getElementById("monasteriesForm").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+        e.preventDefault();
+        return false;
+    }
+});
 
 document.getElementById("monasteriesForm").onsubmit = async e => {
     e.preventDefault();
 
     const fd = new FormData(e.target);
-    const fields = ["P131", "P2", "P746", "P662", "P208", "P471", "P76"];
+    const fields = ["P131", "P2", "P746", "P662", "P471", "P76"]; /*"P208"*/
     
-    // 1. REUSE OR GENERATE QID
-    let qid = localStorage.getItem("pending_monastery_qid");
+    let qid = "";
 
     try {
-        if (!qid) {
-            const res = await fetch("/create-empty-item", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" }
-            });
-            if (!res.ok) throw new Error("Failed to reach server to create QID.");
-            const result = await res.json();
-            qid = result.id;
-            localStorage.setItem("pending_monastery_qid", qid);
-        }
+        // const res = await fetch("/create-empty-item", {
+        //     method: "POST",
+        //     headers: { "Content-Type": "application/json" }
+        // });
+        
+        // if (!res.ok) throw new Error("Failed to reach server to create QID.");
+        // const result = await res.json();
+        
+        // if (!result.id) throw new Error("API failed to return a valid QID.");
+        // qid = result.id;
+        qid = 1
 
         /* ===============================
             2. Build Monastery V1 Command
         =============================== */
         const data = {};
         fields.forEach(field => {
-            let value = fd.get(field);
-            if (!value) return;
-            if (field === "P662") value = `"${value}"`;
+            let rawValue = fd.get(field);
+            if (!rawValue) return;
+
+            // Use the formatter to handle quotes for P662, P471, P76, etc.
+            let formattedMain = formatValueByPid(field, rawValue);
+            
             const qualifiers = buildQualifierParts(field);
-            data[field] = qualifiers ? `${value} ${qualifiers}` : value;
+            data[field] = qualifiers ? `${formattedMain} ${qualifiers}` : formattedMain;
         });
 
         ["L", "D", "A"].forEach(prefix => {
@@ -637,132 +710,20 @@ document.getElementById("monasteriesForm").onsubmit = async e => {
         /* ===============================
             3. PASS TO COMPLEX FORM
         =============================== */
-        // We store the V1 command string in localStorage
+        // Store the V1 command and the new QID for the next form
         localStorage.setItem("pending_monastery_v1", command);
-        
-        // Also update the 'last' QID for the navigation button
         localStorage.setItem("last_monastery_qid", qid);
 
-        /* COMMENTED OUT DATA SUBMISSION
-           ----------------------------------
-           const saveRes = await fetch("/save-data", { ... });
-        */
-
-        console.log("Monastery V1 Command Prepared and Saved:", command);
-        showStatus(`Success! Monastery data for ${qid} is ready. Please click 'Complexes Form' to proceed.`);
+        console.log("Monastery V1 Command Prepared for QID:", qid);
+        console.log("Command Content:\n", command);
+        
+        showStatus(`Success! New QID ${qid} created. Please click 'Complexes Form' to proceed.`);
 
     } catch (err) {
         console.error("Critical Failure:", err.message);
         showStatus(`Error: ${err.message}`, true);
     }
 };
-
-
-// document.getElementById("monasteriesForm").onsubmit = async e => {
-//     e.preventDefault();
-
-//     const fd = new FormData(e.target);
-//     const data = {};
-//     const fields = ["P131", "P2", "P746", "P662", "P208", "P471", "P76"];
-//     const testMode = false; // Set to false for production
-
-//     // 1. REUSE PENDING QID IF IT EXISTS (Avoids Junk creation)
-//     let qid = localStorage.getItem("pending_monastery_qid");
-
-//     try {
-//         // 2. GENERATE NEW QID ONLY IF NO PENDING ONE EXISTS
-//         if (!qid) {
-//             if (testMode) {
-//                 qid = "TEST_QID_" + Date.now();
-//             } else {
-//                 const res = await fetch("/create-empty-item", {
-//                     method: "POST",
-//                     headers: { "Content-Type": "application/json" }
-//                 });
-                
-//                 if (!res.ok) throw new Error("Failed to reach server to create QID.");
-//                 const result = await res.json();
-//                 if (!result.id) throw new Error("API failed to return a valid QID.");
-                
-//                 qid = result.id;
-//             }
-//             // Save immediately to prevent "losing" the ID if the next steps fail
-//             localStorage.setItem("pending_monastery_qid", qid);
-//             console.log("QID generated and locked for use:", qid);
-//         } else {
-//             console.log("Re-using existing pending QID:", qid);
-//         }
-
-//         /* ===============================
-//            3. Build Command Data
-//         =============================== */
-//         fields.forEach(field => {
-//             let value = fd.get(field);
-//             if (!value) return;
-//             if (field === "P662") value = `"${value}"`;
-//             const qualifiers = buildQualifierParts(field);
-//             data[field] = qualifiers ? `${value} ${qualifiers}` : value;
-//         });
-
-//         ["L", "D", "A"].forEach(prefix => {
-//             const langs = fd.getAll(`${prefix}_lang[]`);
-//             const vals = fd.getAll(`${prefix}_value[]`);
-//             langs.forEach((lang, i) => {
-//                 if (!lang || !vals[i]) return;
-//                 const key = `${prefix}${lang.trim()}`;
-//                 if (!data[key]) data[key] = [];
-//                 data[key].push(`"${vals[i]}"`);
-//             });
-//         });
-
-//         let command = "";
-//         Object.entries(data).forEach(([k, v]) => {
-//             if (Array.isArray(v)) {
-//                 v.forEach(x => { command += `${qid}\t${k}\t${x}\n`; });
-//             } else {
-//                 command += `${qid}\t${k}\t${v}\n`;
-//             }
-//         });
-
-//         if (!command) throw new Error("No data provided to execute.");
-
-//         /* ===============================
-//            4. DATA EXECUTION PHASE
-//         =============================== */
-//         // Simulate or perform your actual data submission here
-//         console.log("Executing data for QID:", qid);
-        
-//         // --- If using an API to save data, uncomment below ---
-//         const saveRes = await fetch("/save-data", { 
-//             method: "POST", 
-//             headers: { "Content-Type": "application/json" },
-//             body: JSON.stringify({ command }) 
-//         });
-//         if (!saveRes.ok) throw new Error("Data submission failed.");
-
-//         /* ===============================
-//            5. SUCCESS COMMIT
-//         =============================== */
-//         // We only reach this if EVERYTHING succeeded.
-        
-//         // Mark as the final QID for the Complexes Form button
-//         localStorage.setItem("last_monastery_qid", qid);
-        
-//         // Clear the pending status since this item is now "finished"
-//         localStorage.removeItem("pending_monastery_qid");
-
-//         console.log("========== SUCCESS ==========");
-//         console.log("Final Command:\n", command);
-
-//         showStatus(`Success! Data attached to ${qid}. It is now linked for the Complexes Form.`);
-
-//     } catch (err) {
-//         // ON FAILURE: qid stays in 'pending_monastery_qid'. 
-//         // The user can fix inputs and click again without wasting a new QID.
-//         console.error("Critical Failure:", err.message);
-//         showStatus(`Error: ${err.message}. Retaining QID ${qid} for retry.`, true);
-//     }
-// };
 
 </script>
 
